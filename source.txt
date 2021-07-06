@@ -1,0 +1,47 @@
+gothinkster / golang-gin-realworld-example-app
+https://github.com/gothinkster/golang-gin-realworld-example-app
+
+Package http
+https://golang.org/pkg/net/http
+
+Package io
+https://golang.org/pkg/io/
+
+Package json
+https://golang.org/pkg/encoding/json/
+
+Package ioutil
+https://golang.org/pkg/io/ioutil/
+
+Difference between http.Handle and http.HandleFunc?
+https://stackoverflow.com/questions/21957455/difference-between-http-handle-and-http-handlefunc
+
+What's the difference between ResponseWriter.Write and io.WriteString?
+https://stackoverflow.com/questions/37863374/whats-the-difference-between-responsewriter-write-and-io-writestring
+
+Golang read request body
+https://stackoverflow.com/questions/43021058/golang-read-request-body
+
+Handling JSON Post Request in Go
+https://stackoverflow.com/questions/15672556/handling-json-post-request-in-go
+
+in Golang, what is the difference between json encoding and marshalling
+https://stackoverflow.com/questions/33061117/in-golang-what-is-the-difference-between-json-encoding-and-marshalling
+
+Marshal (Unmarshal) is a wrapper around Encoder (Decoder)
+https://stackoverflow.com/a/62379365/12976234
+
+Two reasons why json.Decoder should be preferred over json.Unmarshal
+https://stackoverflow.com/a/55052845/12976234
+
+How to read/write from/to a file using Go
+https://stackoverflow.com/questions/1821811/how-to-read-write-from-to-a-file-using-go
+
+How to Parse a JSON Request Body in Go
+https://www.alexedwards.net/blog/how-to-properly-parse-a-json-request-body
+
+Testing Your (HTTP) Handlers in Go
+https://www.cloudbees.com/blog/testing-http-handlers-go
+
+Testing in Go: HTTP Servers
+https://ieftimov.com/post/testing-in-go-testing-http-servers/
