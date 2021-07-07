@@ -37,6 +37,9 @@ https://stackoverflow.com/a/55052845/12976234
 How to read/write from/to a file using Go
 https://stackoverflow.com/questions/1821811/how-to-read-write-from-to-a-file-using-go
 
+How to generate a random string of a fixed length in Go?
+https://stackoverflow.com/questions/22892120/how-to-generate-a-random-string-of-a-fixed-length-in-go
+
 How to Parse a JSON Request Body in Go
 https://www.alexedwards.net/blog/how-to-properly-parse-a-json-request-body
 

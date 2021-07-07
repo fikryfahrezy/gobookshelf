@@ -13,9 +13,10 @@ func main() {
 
 	common.RegisterHandler("/", "GET", common.RootPage)
 	common.RegisterHandler("/books", "POST", books.Post)
-	common.RegisterHandler("/books", "GET", books.Get)
-	common.RegisterHandler("/books", "PUT", books.Put)
-	common.RegisterHandler("/books", "DELETE", books.Delete)
+	common.RegisterHandler("/books", "GET", books.GetAll)
+	common.RegisterHandler("/books/", "GET", books.GetOne)
+	common.RegisterHandler("/books/", "PUT", books.Put)
+	common.RegisterHandler("/books/", "DELETE", books.Delete)
 
 	for v := range common.Routes {
 		http.HandleFunc(v, common.MakeHandler)

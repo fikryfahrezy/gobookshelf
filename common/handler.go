@@ -3,6 +3,7 @@ package common
 import (
 	"io"
 	"net/http"
+	"regexp"
 	"strings"
 )
 
@@ -27,7 +28,9 @@ func MakeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rt := Routes[r.URL.Path][m]
+	re := regexp.MustCompile(`^([^/]*/[^/]*/).*$`)
+	u := re.ReplaceAllString(r.URL.Path, "$1")
+	rt := Routes[u][m]
 
 	if rt == nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)

@@ -5,9 +5,10 @@ import (
 	"os"
 )
 
+// Make variable exported so can be changed in testing
 var Filename = "data/books.json"
 
-func saveFile(f string, b []byte) {
+func writeFile(f string, b []byte) {
 	fo, err := os.Create(f)
 	if err != nil {
 		panic(err)
@@ -31,15 +32,11 @@ func InitDB() {
 	initdata := []byte("[]")
 
 	if _, err := os.Stat(Filename); os.IsNotExist(err) {
-
-		saveFile(Filename, initdata)
-
-		return
+		writeFile(Filename, initdata)
 	}
 }
 
 func Insert(v interface{}) {
-	// open input file
 	fi, err := os.Open(Filename)
 	if err != nil {
 		panic(err)
@@ -59,5 +56,20 @@ func Insert(v interface{}) {
 		panic(err)
 	}
 
-	saveFile(Filename, b)
+	writeFile(Filename, b)
+}
+
+func Read(v interface{}) {
+	fi, err := os.Open(Filename)
+	if err != nil {
+		panic(err)
+	}
+	// close fi on exit and check for its returned error
+	defer func() {
+		if err := fi.Close(); err != nil {
+			panic(err)
+		}
+	}()
+
+	json.NewDecoder(fi).Decode(&v)
 }
