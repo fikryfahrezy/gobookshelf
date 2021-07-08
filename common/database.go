@@ -19,7 +19,6 @@ func writeFile(f string, b []byte) {
 			panic(err)
 		}
 	}()
-
 	if _, err := fo.Write(b); err != nil {
 		panic(err)
 	}
@@ -30,7 +29,6 @@ func writeFile(f string, b []byte) {
 func InitDB() {
 	// open input file
 	initdata := []byte("[]")
-
 	if _, err := os.Stat(Filename); os.IsNotExist(err) {
 		writeFile(Filename, initdata)
 	}
@@ -47,7 +45,6 @@ func Insert(v interface{}) {
 			panic(err)
 		}
 	}()
-
 	var d []interface{}
 	json.NewDecoder(fi).Decode(&d)
 	d = append(d, v)
@@ -55,7 +52,6 @@ func Insert(v interface{}) {
 	if err != nil {
 		panic(err)
 	}
-
 	writeFile(Filename, b)
 }
 
@@ -70,6 +66,23 @@ func Read(v interface{}) {
 			panic(err)
 		}
 	}()
-
 	json.NewDecoder(fi).Decode(&v)
+}
+
+func Update(v interface{}) {
+	fi, err := os.Open(Filename)
+	if err != nil {
+		panic(err)
+	}
+	// close fi on exit and check for its returned error
+	defer func() {
+		if err := fi.Close(); err != nil {
+			panic(err)
+		}
+	}()
+	b, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+	writeFile(Filename, b)
 }

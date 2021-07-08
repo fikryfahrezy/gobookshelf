@@ -1,7 +1,9 @@
 package common
 
 import (
+	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -22,21 +24,17 @@ func RootPage(w http.ResponseWriter, r *http.Request) {
 
 func MakeHandler(w http.ResponseWriter, r *http.Request) {
 	m := routeMethods[strings.ToUpper(r.Method)]
-
 	if m == "" {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		return
 	}
-
 	re := regexp.MustCompile(`^([^/]*/[^/]*/).*$`)
 	u := re.ReplaceAllString(r.URL.Path, "$1")
 	rt := Routes[u][m]
-
 	if rt == nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
-
 	rt(w, r)
 }
 
@@ -45,12 +43,17 @@ func RegisterHandler(url string, mtd string, fn http.HandlerFunc) {
 	if m == "" {
 		return
 	}
-
 	ro := Routes[url]
 	if ro == nil {
 		ro = make(map[string]func(http.ResponseWriter, *http.Request))
 		Routes[url] = ro
 	}
-
 	Routes[url][mtd] = fn
+}
+
+func InitServer(p int) {
+	for v := range Routes {
+		http.HandleFunc(v, MakeHandler)
+	}
+	log.Fatal(http.ListenAndServe(":"+fmt.Sprint(p), nil))
 }

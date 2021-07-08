@@ -22,7 +22,7 @@ func (mr *MalformedRequest) Error() string {
 	return mr.Message
 }
 
-func decodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) error {
+func decodeJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error {
 	// If the Content-Type header is present, check that it has the value
 	// application/json. Note that we are using the gddo/httputil/header
 	// package to parse and extract the value here, so the check works
@@ -129,8 +129,8 @@ func decodeErrHandler(e error) *MalformedRequest {
 	return nil
 }
 
-func DecodeBody(w http.ResponseWriter, r *http.Request, dst interface{}) *MalformedRequest {
-	err := decodeJSONBody(w, r, dst)
+func DecodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) *MalformedRequest {
+	err := decodeJSON(w, r, dst)
 	ok := decodeErrHandler(err)
 	return ok
 }
@@ -142,4 +142,10 @@ func RouteId(w http.ResponseWriter, u string) (string, *MalformedRequest) {
 		return "", &MalformedRequest{http.StatusNotFound, http.StatusText(http.StatusNotFound)}
 	}
 	return r, nil
+}
+
+func ResJSON(w http.ResponseWriter, s int, v interface{}) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(s)
+	json.NewEncoder(w).Encode(v)
 }
