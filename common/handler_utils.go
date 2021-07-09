@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -70,7 +71,7 @@ func decodeJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error {
 			return &MalformedRequest{http.StatusBadRequest, msg}
 
 		// Catch any type errors, like trying to assign a string in the
-		// JSON request body to a int field in our Person struct. We can
+		// JSON request body to a int field in Requeired struct. We can
 		// interpolate the relevant field name and position into the error
 		// message to make it easier for the client to fix.
 		case errors.As(err, &unmarshalTypeError):
@@ -78,7 +79,7 @@ func decodeJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error {
 			return &MalformedRequest{http.StatusBadRequest, msg}
 
 		// Catch any type errors, like trying to assign a string in the
-		// JSON request body to a int field in our Person struct. We can
+		// JSON request body to a int field in Required struct. We can
 		// interpolate the relevant field name and position into the error
 		// message to make it easier for the client to fix.
 		case strings.HasPrefix(err.Error(), "json: unknown field "):
@@ -145,7 +146,24 @@ func RouteId(w http.ResponseWriter, u string) (string, *MalformedRequest) {
 }
 
 func ResJSON(w http.ResponseWriter, s int, v interface{}) {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	c := w.Header().Get("Content-Type")
+	if c == "" {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	} else if !strings.Contains(c, "application/json") {
+		w.Header().Add("Content-Type", "application/json")
+	}
 	w.WriteHeader(s)
 	json.NewEncoder(w).Encode(v)
+}
+
+func ReqQuery(ur string) (func(n string) string, error) {
+	u, err := url.Parse(ur)
+	if err != nil {
+		return nil, err
+	}
+	q := u.Query()
+
+	return func(n string) string {
+		return q.Get(n)
+	}, nil
 }

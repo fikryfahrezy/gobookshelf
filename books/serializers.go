@@ -1,47 +1,47 @@
 package books
 
-type CommonResponse struct {
+type commonResponse struct {
 	Status  string      `json:"status"`
 	Message string      `json:"message,omitempty"`
 	Data    interface{} `json:"data,omitempty"`
 }
 
-func (c *CommonResponse) Response() *CommonResponse {
+func (c *commonResponse) Response() *commonResponse {
 	return c
 }
 
-type BookIdResponse struct {
+type bookIdResponse struct {
 	BookId string `json:"bookId"`
 }
 
-func (b *BookIdResponse) Response() *BookIdResponse {
+func (b *bookIdResponse) Response() *bookIdResponse {
 	return b
 }
 
-type Book struct {
+type book struct {
 	Id        string `json:"id"`
 	Name      string `json:"name"`
 	Publisher string `json:"publisher"`
 }
 
 type BooksSerializer struct {
-	Books []BookModel
+	Books []bookModel
 }
 
-type BooksResponse struct {
-	Books []Book `json:"books"`
+type booksResponse struct {
+	Books []book `json:"books"`
 }
 
-func (s *BooksSerializer) Response() BooksResponse {
-	b := BooksResponse{}
+func (s *BooksSerializer) Response() booksResponse {
+	b := booksResponse{}
 	for _, v := range s.Books {
-		b.Books = append(b.Books, Book{v.Id, v.Name, v.Publisher})
+		b.Books = append(b.Books, book{v.Id, v.Name, v.Publisher})
 	}
 	return b
 }
 
 type BookSerializer struct {
-	Book BookModel `json:"book"`
+	Book bookModel `json:"book"`
 }
 
 func (b *BookSerializer) Response() BookSerializer {

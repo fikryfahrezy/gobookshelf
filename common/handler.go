@@ -2,10 +2,8 @@ package common
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"net/http"
-	"regexp"
 	"strings"
 )
 
@@ -16,10 +14,99 @@ var routeMethods = map[string]string{
 	"DELETE": "DELETE",
 }
 
-var Routes = make(map[string]map[string]func(http.ResponseWriter, *http.Request))
+type RouteChild struct {
+	Depth int
+	Route string
+	Val   string
+	Fn    map[string]func(http.ResponseWriter, *http.Request)
+	Child *RouteChild
+}
 
-func RootPage(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "Hello World")
+func (r *RouteChild) CreateFn(mtd string, fn func(http.ResponseWriter, *http.Request)) {
+	if f := r.Fn; f == nil {
+		r.Fn = make(map[string]func(http.ResponseWriter, *http.Request))
+	}
+	r.Fn[mtd] = fn
+}
+
+// var Routes = make(map[string]map[string]func(http.ResponseWriter, *http.Request))
+
+// Deprecated: Not using this anymore
+// func oldRegisterHandler(mtd string, url string, fn http.HandlerFunc) {
+// 	m := routeMethods[strings.ToUpper(mtd)]
+// 	if m == "" {
+// 		return
+// 	}
+// 	if ro := Routes[url]; ro == nil {
+// 		Routes[url] = make(map[string]func(http.ResponseWriter, *http.Request))
+// 	}
+// 	Routes[url][mtd] = fn
+// }
+
+var Routes = make(map[string]RouteChild)
+
+func routeChild(r *RouteChild, i int, m int, mtd string, s []string, fn func(http.ResponseWriter, *http.Request)) *RouteChild {
+	nr := r
+	if r == nil {
+		nr = &RouteChild{}
+	}
+	if i == m {
+		nr.CreateFn(mtd, fn)
+		return nr
+	}
+	if i >= m {
+		nr.Route = "/" + s[0]
+		nr.CreateFn(mtd, fn)
+		return nr
+	}
+	nr.Depth = i
+	nr.Route = "/" + s[i]
+	i++
+	if nc := routeChild(nr.Child, i, m, mtd, s, fn); nc != nil {
+		nr.Child = nc
+	}
+	return nr
+}
+
+func registerHandler(mtd string, url string, fn func(http.ResponseWriter, *http.Request)) {
+	s := strings.Split(url, "/")
+	l := len(s)
+	if l <= 1 {
+		return
+	}
+	s = s[1:]
+	r := "/" + s[0]
+	if o := Routes[r]; o.Route != "" {
+		Routes[r] = *routeChild(&o, 1, l-1, mtd, s, fn)
+	} else {
+		Routes[r] = RouteChild{0, r, "", map[string]func(http.ResponseWriter, *http.Request){
+			mtd: fn,
+		}, nil}
+	}
+}
+
+func getRoute(url string, mtd string) func(http.ResponseWriter, *http.Request) {
+	s := strings.Split(url, "/")
+	s = s[1:]
+	var l RouteChild
+	if len(s) == 1 {
+		if h := Routes["/"+s[0]].Fn[mtd]; h != nil {
+			return h
+		}
+	}
+	for i, v := range s {
+		v = "/" + v
+		if i == 0 {
+			l = Routes[v]
+		}
+		if f := l.Fn[mtd]; f != nil && i == len(s)-1 {
+			return f
+		}
+		if l.Child != nil {
+			l = *l.Child
+		}
+	}
+	return nil
 }
 
 func MakeHandler(w http.ResponseWriter, r *http.Request) {
@@ -28,9 +115,11 @@ func MakeHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		return
 	}
-	re := regexp.MustCompile(`^([^/]*/[^/]*/).*$`)
-	u := re.ReplaceAllString(r.URL.Path, "$1")
-	rt := Routes[u][m]
+	// Old Get Route
+	// re := regexp.MustCompile(`^([^/]*/[^/]*/).*$`)
+	// u := re.ReplaceAllString(r.URL.Path, "$1")
+	// rt := Routes[u][m]
+	rt := getRoute(r.URL.Path, m)
 	if rt == nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -38,17 +127,24 @@ func MakeHandler(w http.ResponseWriter, r *http.Request) {
 	rt(w, r)
 }
 
-func RegisterHandler(url string, mtd string, fn http.HandlerFunc) {
-	m := routeMethods[strings.ToUpper(mtd)]
-	if m == "" {
-		return
-	}
-	ro := Routes[url]
-	if ro == nil {
-		ro = make(map[string]func(http.ResponseWriter, *http.Request))
-		Routes[url] = ro
-	}
-	Routes[url][mtd] = fn
+func HanlderPOST(url string, fn http.HandlerFunc) {
+	// oldRegisterHandler("POST", url, fn)
+	registerHandler("POST", url, fn)
+}
+
+func HanlderGET(url string, fn http.HandlerFunc) {
+	// oldRegisterHandler("GET", url, fn)
+	registerHandler("GET", url, fn)
+}
+
+func HanlderPUT(url string, fn http.HandlerFunc) {
+	// oldRegisterHandler("PUT", url, fn)
+	registerHandler("PUT", url, fn)
+}
+
+func HanlderDELETE(url string, fn http.HandlerFunc) {
+	// oldRegisterHandler("DELETE", url, fn)
+	registerHandler("DELETE", url, fn)
 }
 
 func InitServer(p int) {
@@ -56,4 +152,8 @@ func InitServer(p int) {
 		http.HandleFunc(v, MakeHandler)
 	}
 	log.Fatal(http.ListenAndServe(":"+fmt.Sprint(p), nil))
+}
+
+func Test(url string, mtd string) func(http.ResponseWriter, *http.Request) {
+	return getRoute(url, mtd)
 }

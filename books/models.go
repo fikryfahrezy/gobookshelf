@@ -1,12 +1,13 @@
 package books
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/fikryfahrezy/gobookshelf/common"
 )
 
-type BookModel struct {
+type bookModel struct {
 	Id         string `json:"id"`
 	Name       string `json:"name"`
 	Year       int    `json:"year"`
@@ -21,36 +22,30 @@ type BookModel struct {
 	UpdatedAt  string `json:"updatedAt"`
 }
 
-func (b *BookModel) Save() {
+func (b *bookModel) Save() {
 	common.Insert(b)
 }
 
-func GetAllBooks() []BookModel {
-	var b []BookModel
+func GetAllBooks() []bookModel {
+	var b []bookModel
 	common.Read(&b)
 	return b
 }
 
-func GetSelectedBooks(q GetBookQuery) []BookModel {
-	b := []BookModel{}
+func GetSelectedBooks(q getBookQuery) []bookModel {
+	b := []bookModel{}
 	common.Read(&b)
-	var nb []BookModel
+	var nb []bookModel
 	n, f, d := q.Name, q.Finished, q.Reading
 	for _, v := range b {
-		if d.Exist {
-			if d.Val == v.Reading {
-				nb = append(nb, v)
-			}
+		if pf, err := strconv.ParseBool(f); err == nil && pf == v.Finished {
+			nb = append(nb, v)
 		}
-		if f.Exist {
-			if f.Val == v.Finished {
-				nb = append(nb, v)
-			}
+		if pd, err := strconv.ParseBool(d); err == nil && pd == v.Reading {
+			nb = append(nb, v)
 		}
-		if n.Exist {
-			if strings.Contains(strings.ToLower(v.Name), strings.ToLower(n.Val)) {
-				nb = append(nb, v)
-			}
+		if n != "" && strings.Contains(strings.ToLower(v.Name), strings.ToLower(n)) {
+			nb = append(nb, v)
 		}
 	}
 	if nb == nil {
@@ -59,7 +54,7 @@ func GetSelectedBooks(q GetBookQuery) []BookModel {
 	return nb
 }
 
-func (b *BookModel) Update() {
+func (b *bookModel) Update() {
 	bs := GetAllBooks()
 	for i, v := range bs {
 		if v.Id == b.Id {
@@ -69,7 +64,7 @@ func (b *BookModel) Update() {
 	common.Update(bs)
 }
 
-func (b *BookModel) Delete() {
+func (b *bookModel) Delete() {
 	bs := GetAllBooks()
 	for i, v := range bs {
 		if v.Id == b.Id {

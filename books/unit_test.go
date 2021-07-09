@@ -9,8 +9,8 @@ import (
 	"github.com/fikryfahrezy/gobookshelf/common"
 )
 
-func createBook(id string) BookModel {
-	b := BookModel{
+func createBook(id string) bookModel {
+	b := bookModel{
 		id,
 		"Name",
 		1234,
@@ -34,11 +34,13 @@ func createBook(id string) BookModel {
 func TestHandlers(t *testing.T) {
 	common.Filename = "../data/books.json"
 	cases := []struct {
+		testName              string
 		init                  func()
 		url, method, bodydata string
 		expectedCode          int
 	}{
 		{
+			"Post Book Success",
 			func() {},
 			"/books",
 			"POST",
@@ -46,6 +48,15 @@ func TestHandlers(t *testing.T) {
 			http.StatusCreated,
 		},
 		{
+			"Post Book Fail, Not Provided Body Data",
+			func() {},
+			"/books",
+			"POST",
+			``,
+			http.StatusBadRequest,
+		},
+		{
+			"Success, Without Query",
 			func() {},
 			"/books",
 			"GET",
@@ -53,6 +64,49 @@ func TestHandlers(t *testing.T) {
 			http.StatusOK,
 		},
 		{
+			"Success, With Query `?reading=0`",
+			func() {},
+			"/books?reading=0",
+			"GET",
+			``,
+			http.StatusOK,
+		},
+		{
+			"Success, With Query `?reading=1`",
+			func() {},
+			"/books?reading=1",
+			"GET",
+			``,
+			http.StatusOK,
+		},
+		{
+			"Success, With Query `?finished=0`",
+			func() {},
+			"/books?finished=0",
+			"GET",
+			``,
+			http.StatusOK,
+		},
+		{
+			"Success, With Query `?finished=1`",
+			func() {},
+			"/books?finished=1",
+			"GET",
+			``,
+			http.StatusOK,
+		},
+		{
+			"Success, With Query `?name=Name`",
+			func() {
+				createBook("5")
+			},
+			"/books?name=Name",
+			"GET",
+			``,
+			http.StatusOK,
+		},
+		{
+			"Success, Book With Required ID found",
 			func() {
 				createBook("1")
 			},
@@ -62,6 +116,23 @@ func TestHandlers(t *testing.T) {
 			http.StatusOK,
 		},
 		{
+			"Fail, Book With Required ID not found",
+			func() {},
+			"/books/10",
+			"GET",
+			``,
+			http.StatusNotFound,
+		},
+		{
+			"Fail, Route Not Found",
+			func() {},
+			"/books/",
+			"GET",
+			``,
+			http.StatusNotFound,
+		},
+		{
+			"Success, Book Updated",
 			func() {
 				createBook("2")
 			},
@@ -71,6 +142,23 @@ func TestHandlers(t *testing.T) {
 			http.StatusOK,
 		},
 		{
+			"Fail, Book Not Found",
+			func() {},
+			"/books/9",
+			"PUT",
+			``,
+			http.StatusBadRequest,
+		},
+		{
+			"Fail, Book Not Found",
+			func() {},
+			"/books/9",
+			"PUT",
+			`{"name":"name","year":7,"author":"author","summary":"summary","publisher":"publisher","pageCount":0,"readPage":0,"reading":false}`,
+			http.StatusNotFound,
+		},
+		{
+			"Success, Book Deleted",
 			func() {
 				createBook("3")
 			},
@@ -80,63 +168,28 @@ func TestHandlers(t *testing.T) {
 			http.StatusOK,
 		},
 		{
+			"Success, Book Not Found",
 			func() {},
-			"/books/",
-			"GET",
+			"/books/9",
+			"DELETE",
 			``,
 			http.StatusNotFound,
 		},
 		{
+			"Fail, Method Not Exist on Route",
 			func() {},
 			"/books",
 			"PATCH",
 			``,
 			http.StatusMethodNotAllowed,
 		},
-		{
-			func() {},
-			"/books?reading=0",
-			"GET",
-			``,
-			http.StatusOK,
-		},
-		{
-			func() {},
-			"/books?reading=1",
-			"GET",
-			``,
-			http.StatusOK,
-		},
-		{
-			func() {},
-			"/books?finished=0",
-			"GET",
-			``,
-			http.StatusOK,
-		},
-		{
-			func() {},
-			"/books?finished=1",
-			"GET",
-			``,
-			http.StatusOK,
-		},
-		{
-			func() {
-				createBook("5")
-			},
-			"/books?name=Name",
-			"GET",
-			``,
-			http.StatusOK,
-		},
 	}
 
-	common.RegisterHandler("/books", "POST", Post)
-	common.RegisterHandler("/books", "GET", GetAll)
-	common.RegisterHandler("/books/", "GET", GetOne)
-	common.RegisterHandler("/books/", "PUT", Put)
-	common.RegisterHandler("/books/", "DELETE", Delete)
+	common.HanlderPOST("/books", Post)
+	common.HanlderGET("/books", GetAll)
+	common.HanlderGET("/books/", GetOne)
+	common.HanlderPUT("/books/", Put)
+	common.HanlderDELETE("/books/", Delete)
 
 	for _, c := range cases {
 		c.init()
@@ -154,9 +207,9 @@ func TestHandlers(t *testing.T) {
 		// For debugging purpose
 		// resp := rr.Result()
 		// body, _ := io.ReadAll(resp.Body)
-		// fmt.Println(resp.StatusCode)
-		// fmt.Println(resp.Header.Get("Content-Type"))
-		// fmt.Println(string(body))
+		// t.Log(resp.StatusCode)
+		// t.Log(resp.Header.Get("Content-Type"))
+		// t.Log(string(body))
 
 		if rr.Result().StatusCode != c.expectedCode {
 			t.FailNow()
