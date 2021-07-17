@@ -28,14 +28,14 @@ func Post(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAll(w http.ResponseWriter, r *http.Request) {
-	q, err := common.ReqQuery(r.URL.String())
+	q, err := common.ReqQuery(r)
 	if err != nil {
 		res := commonResponse{"fail", err.Error(), nil}
 		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
-	bq := getBookQuery{q("name"), q("reading"), q("finished")}
-	b := getBooks(bq)
+	bq := GetBookQuery{q("name"), q("reading"), q("finished")}
+	b := GetBooks(bq)
 	bs := BooksSerializer{b}
 	res := commonResponse{"success", "", bs.Response()}
 	common.ResJSON(w, http.StatusOK, res.Response())
@@ -43,10 +43,11 @@ func GetAll(w http.ResponseWriter, r *http.Request) {
 
 func GetOne(w http.ResponseWriter, r *http.Request) {
 	var res commonResponse
-	id, err := common.RouteId(w, r.URL.Path)
-	if err != nil {
-		res = commonResponse{"fail", err.Error(), nil}
-		common.ResJSON(w, err.Status, res.Response())
+	p := common.ReqParams(r)
+	id := p("id")
+	if id == "" {
+		res = commonResponse{"fail", "Not Found", nil}
+		common.ResJSON(w, http.StatusNotFound, res.Response())
 		return
 	}
 	b, ok := getBook(id)
@@ -75,10 +76,11 @@ func Put(w http.ResponseWriter, r *http.Request) {
 		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
-	id, err := common.RouteId(w, r.URL.Path)
-	if err != nil {
-		res = commonResponse{"fail", err.Error(), nil}
-		common.ResJSON(w, err.Status, res.Response())
+	p := common.ReqParams(r)
+	id := p("id")
+	if id == "" {
+		res = commonResponse{"fail", "Not Found", nil}
+		common.ResJSON(w, http.StatusNotFound, res.Response())
 		return
 	}
 	nb, ok := updateBook(id, b)
@@ -94,10 +96,11 @@ func Put(w http.ResponseWriter, r *http.Request) {
 
 func Delete(w http.ResponseWriter, r *http.Request) {
 	var res commonResponse
-	id, err := common.RouteId(w, r.URL.Path)
-	if err != nil {
-		res = commonResponse{"fail", err.Error(), nil}
-		common.ResJSON(w, err.Status, res.Response())
+	p := common.ReqParams(r)
+	id := p("id")
+	if id == "" {
+		res = commonResponse{"fail", "Not Found", nil}
+		common.ResJSON(w, http.StatusNotFound, res.Response())
 		return
 	}
 	ob, ok := deleteBook(id)

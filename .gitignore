@@ -1,1 +1,4 @@
-data/books.json
+.vscode
+
+data/*
+!data/.gitkeep

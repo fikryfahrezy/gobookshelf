@@ -1,9 +1,13 @@
 package common
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -15,11 +19,11 @@ var routeMethods = map[string]string{
 }
 
 type RouteChild struct {
-	Depth int
-	Route string
-	Val   string
-	Fn    map[string]func(http.ResponseWriter, *http.Request)
-	Child *RouteChild
+	Depth   int
+	Route   string
+	Dynamic bool
+	Fn      map[string]func(http.ResponseWriter, *http.Request)
+	Child   *RouteChild
 }
 
 func (r *RouteChild) CreateFn(mtd string, fn func(http.ResponseWriter, *http.Request)) {
@@ -29,71 +33,20 @@ func (r *RouteChild) CreateFn(mtd string, fn func(http.ResponseWriter, *http.Req
 	r.Fn[mtd] = fn
 }
 
+// Deprecated: Not using this anymore (Deleted Soon)
 // var Routes = make(map[string]map[string]func(http.ResponseWriter, *http.Request))
-
-// Deprecated: Not using this anymore
-// func oldRegisterHandler(mtd string, url string, fn http.HandlerFunc) {
-// 	m := routeMethods[strings.ToUpper(mtd)]
-// 	if m == "" {
-// 		return
-// 	}
-// 	if ro := Routes[url]; ro == nil {
-// 		Routes[url] = make(map[string]func(http.ResponseWriter, *http.Request))
-// 	}
-// 	Routes[url][mtd] = fn
-// }
 
 var Routes = make(map[string]RouteChild)
 
-func routeChild(r *RouteChild, i int, m int, mtd string, s []string, fn func(http.ResponseWriter, *http.Request)) *RouteChild {
-	nr := r
-	if r == nil {
-		nr = &RouteChild{}
-	}
-	if i == m {
-		nr.CreateFn(mtd, fn)
-		return nr
-	}
-	if i >= m {
-		nr.Route = "/" + s[0]
-		nr.CreateFn(mtd, fn)
-		return nr
-	}
-	nr.Depth = i
-	nr.Route = "/" + s[i]
-	i++
-	if nc := routeChild(nr.Child, i, m, mtd, s, fn); nc != nil {
-		nr.Child = nc
-	}
-	return nr
-}
-
-func registerHandler(mtd string, url string, fn func(http.ResponseWriter, *http.Request)) {
-	s := strings.Split(url, "/")
-	l := len(s)
-	if l <= 1 {
-		return
-	}
-	s = s[1:]
-	r := "/" + s[0]
-	if o := Routes[r]; o.Route != "" {
-		Routes[r] = *routeChild(&o, 1, l-1, mtd, s, fn)
-	} else {
-		Routes[r] = RouteChild{0, r, "", map[string]func(http.ResponseWriter, *http.Request){
-			mtd: fn,
-		}, nil}
-	}
-}
-
-func getRoute(url string, mtd string) func(http.ResponseWriter, *http.Request) {
+func getRoute(url, mtd string) func(http.ResponseWriter, *http.Request) {
 	s := strings.Split(url, "/")
 	s = s[1:]
-	var l RouteChild
 	if len(s) == 1 {
 		if h := Routes["/"+s[0]].Fn[mtd]; h != nil {
 			return h
 		}
 	}
+	var l RouteChild
 	for i, v := range s {
 		v = "/" + v
 		if i == 0 {
@@ -127,6 +80,54 @@ func MakeHandler(w http.ResponseWriter, r *http.Request) {
 	rt(w, r)
 }
 
+// Deprecated: Not using this anymore (Deleted Soon)
+// func oldRegisterHandler(mtd string, url string, fn http.HandlerFunc) {
+// 	m := routeMethods[strings.ToUpper(mtd)]
+// 	if m == "" {
+// 		return
+// 	}
+// 	if ro := Routes[url]; ro == nil {
+// 		Routes[url] = make(map[string]func(http.ResponseWriter, *http.Request))
+// 	}
+// 	Routes[url][mtd] = fn
+// }
+
+func routeChild(r *RouteChild, i, m int, mtd string, s []string, fn func(http.ResponseWriter, *http.Request)) *RouteChild {
+	nr := r
+	if r == nil {
+		nr = &RouteChild{}
+	}
+	rt := s[i]
+	nr.Depth = i
+	nr.Route = "/" + rt
+	if strings.HasPrefix(rt, ":") {
+		nr.Dynamic = true
+	} else {
+		nr.Dynamic = false
+	}
+	if i == m-1 {
+		nr.CreateFn(mtd, fn)
+		return nr
+	}
+	i++
+	if nc := routeChild(nr.Child, i, m, mtd, s, fn); nc != nil {
+		nr.Child = nc
+	}
+	return nr
+}
+
+func registerHandler(mtd, url string, fn func(http.ResponseWriter, *http.Request)) {
+	s := strings.Split(url, "/")
+	s = s[1:]
+	l := len(s)
+	if l == 0 {
+		return
+	}
+	r := "/" + s[0]
+	o := Routes[r]
+	Routes[r] = *routeChild(&o, 0, l, mtd, s, fn)
+}
+
 func HanlderPOST(url string, fn http.HandlerFunc) {
 	// oldRegisterHandler("POST", url, fn)
 	registerHandler("POST", url, fn)
@@ -154,6 +155,167 @@ func InitServer(p int) {
 	log.Fatal(http.ListenAndServe(":"+fmt.Sprint(p), nil))
 }
 
-func Test(url string, mtd string) func(http.ResponseWriter, *http.Request) {
-	return getRoute(url, mtd)
+type MalformedRequest struct {
+	Status  int    `json:"status"`
+	Message string `json:"message"`
+}
+
+func (mr *MalformedRequest) Error() string {
+	return mr.Message
+}
+
+// How to Parse a JSON Request Body in Go (with Validation)
+// https://www.alexedwards.net/blog/how-to-properly-parse-a-json-request-body
+func DecodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) *MalformedRequest {
+	// If the Content-Type header is present, check that it has the value
+	// application/json. Note that we are using the gddo/httputil/header
+	// package to parse and extract the value here, so the check works
+	// even if the client includes additional charset or boundary
+	// information in the header.
+	cntType := r.Header.Get("Content-Type")
+	if cntType != "" {
+		if cntType != "application/json" {
+			msg := "Content-Type header is not application/json"
+			return &MalformedRequest{http.StatusUnsupportedMediaType, msg}
+		}
+	}
+
+	// Use http.MaxBytesReader to enforce a maximum read of 1MB from the
+	// response body. A request body larger than that will now result in
+	// Decode() returning a "http: request body too large" error.
+	r.Body = http.MaxBytesReader(w, r.Body, 1048576)
+
+	// Setup the decoder and call the DisallowUnknownFields() method on it.
+	// This will cause Decode() to return a "json: unknown field ..." error
+	// if it encounters any extra unexpected fields in the JSON. Strictly
+	// speaking, it returns an error for "keys which do not match any
+	// non-ignored, exported fields in the destination".
+	dec := json.NewDecoder(r.Body)
+	dec.DisallowUnknownFields()
+	err := dec.Decode(&dst)
+	if err != nil {
+		var syntaxError *json.SyntaxError
+		var unmarshalTypeError *json.UnmarshalTypeError
+
+		switch {
+		// Catch any syntax errors in the JSON and send an error message
+		// which interpolates the location of the problem to make it
+		// easier for the client to fix.
+		case errors.As(err, &syntaxError):
+			msg := fmt.Sprintf("Request body contains badly-formed JSON (at position %d)", syntaxError.Offset)
+			return &MalformedRequest{http.StatusBadRequest, msg}
+
+		// Catch any syntax errors in the JSON and send an error message
+		// which interpolates the location of the problem to make it
+		// easier for the client to fix.
+		case errors.Is(err, io.ErrUnexpectedEOF):
+			msg := "Request body contains badly-formed JSON"
+			return &MalformedRequest{http.StatusBadRequest, msg}
+
+		// Catch any type errors, like trying to assign a string in the
+		// JSON request body to a int field in Requeired struct. We can
+		// interpolate the relevant field name and position into the error
+		// message to make it easier for the client to fix.
+		case errors.As(err, &unmarshalTypeError):
+			msg := fmt.Sprintf("Request body contains an invalid value for the %q field (at position %d)", unmarshalTypeError.Field, unmarshalTypeError.Offset)
+			return &MalformedRequest{http.StatusBadRequest, msg}
+
+		// Catch any type errors, like trying to assign a string in the
+		// JSON request body to a int field in Required struct. We can
+		// interpolate the relevant field name and position into the error
+		// message to make it easier for the client to fix.
+		case strings.HasPrefix(err.Error(), "json: unknown field "):
+			fieldName := strings.TrimPrefix(err.Error(), "json: unknown field ")
+			msg := fmt.Sprintf("Request body contains unknown field %s", fieldName)
+			return &MalformedRequest{http.StatusBadRequest, msg}
+
+		// An io.EOF error is returned by Decode() if the request body is
+		// empty.
+		case errors.Is(err, io.EOF):
+			msg := "Request body must not be empty"
+			return &MalformedRequest{http.StatusBadRequest, msg}
+
+		// Catch the error caused by the request body being too large. Again
+		// there is an open issue regarding turning this into a sentinel
+		// error at https://github.com/golang/go/issues/30715.
+		case err.Error() == "http: request body too large":
+			msg := "Request body must not be larger than 1MB"
+			return &MalformedRequest{http.StatusRequestEntityTooLarge, msg}
+
+		// Otherwise default to logging the error and sending a 500 Internal
+		// Server Error response.
+		default:
+			return &MalformedRequest{http.StatusInternalServerError, err.Error()}
+		}
+
+	}
+
+	// Otherwise default to logging the error and sending a 500 Internal
+	// Server Error response.
+	err = dec.Decode(&struct{}{})
+	if err != io.EOF {
+		msg := "Request body must only contain a single JSON object"
+		err = &MalformedRequest{http.StatusBadRequest, msg}
+	}
+
+	return nil
+}
+
+func ReqQuery(r *http.Request) (func(n string) string, error) {
+	u, err := url.Parse(r.URL.String())
+	if err != nil {
+		return nil, err
+	}
+	q := u.Query()
+
+	return func(n string) string {
+		return q.Get(n)
+	}, nil
+}
+
+// Deprecated: Not using this anymore (Deleted Soon)
+// func RouteId(w http.ResponseWriter, u string) (string, *MalformedRequest) {
+// 	s := strings.SplitAfter(u, "/")
+// 	r := s[len(s)-1]
+// 	if r == "" {
+// 		return "", &MalformedRequest{http.StatusNotFound, http.StatusText(http.StatusNotFound)}
+// 	}
+// 	return r, nil
+// }
+
+func ReqParams(r *http.Request) func(p string) string {
+	s := strings.Split(r.URL.Path, "/")
+	s = s[1:]
+	return func(p string) string {
+		if len(s) == 1 {
+			if r := Routes["/:id"]; r.Dynamic && strings.Split(r.Route, "/:")[1] == p {
+				return s[0]
+			}
+		}
+		var l RouteChild
+		for i, v := range s {
+			v = "/" + v
+			if i == 0 {
+				l = Routes[v]
+			}
+			if l.Dynamic && strings.Split(l.Route, "/:")[1] == p {
+				return s[l.Depth]
+			}
+			if l.Child != nil {
+				l = *l.Child
+			}
+		}
+		return ""
+	}
+}
+
+func ResJSON(w http.ResponseWriter, s int, v interface{}) {
+	c := w.Header().Get("Content-Type")
+	if c == "" {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	} else if !strings.Contains(c, "application/json") {
+		w.Header().Add("Content-Type", "application/json")
+	}
+	w.WriteHeader(s)
+	json.NewEncoder(w).Encode(v)
 }

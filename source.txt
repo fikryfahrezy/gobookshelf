@@ -43,6 +43,15 @@ https://stackoverflow.com/questions/22892120/how-to-generate-a-random-string-of-
 How to Parse a JSON Request Body in Go
 https://www.alexedwards.net/blog/how-to-properly-parse-a-json-request-body
 
+What is the difference between `Host` and `URL.Host` for golang `http.Request`?
+https://stackoverflow.com/questions/42921567/what-is-the-difference-between-host-and-url-host-for-golang-http-request
+
+Include js file in Go template
+https://stackoverflow.com/questions/28899675/include-js-file-in-go-template
+
+Golang. What to use? http.ServeFile(..) or http.FileServer(..)?
+https://stackoverflow.com/questions/28793619/golang-what-to-use-http-servefile-or-http-fileserver
+
 Testing Your (HTTP) Handlers in Go
 https://www.cloudbees.com/blog/testing-http-handlers-go
 

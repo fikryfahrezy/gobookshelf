@@ -31,7 +31,7 @@ func saveBook(b bookModelValidator) bookModel {
 	return nb
 }
 
-func getBooks(q getBookQuery) []bookModel {
+func GetBooks(q GetBookQuery) []bookModel {
 	b := GetSelectedBooks(q)
 	return b
 }

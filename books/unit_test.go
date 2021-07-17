@@ -187,9 +187,9 @@ func TestHandlers(t *testing.T) {
 
 	common.HanlderPOST("/books", Post)
 	common.HanlderGET("/books", GetAll)
-	common.HanlderGET("/books/", GetOne)
-	common.HanlderPUT("/books/", Put)
-	common.HanlderDELETE("/books/", Delete)
+	common.HanlderGET("/books/:id", GetOne)
+	common.HanlderPUT("/books/:id", Put)
+	common.HanlderDELETE("/books/:id", Delete)
 
 	for _, c := range cases {
 		c.init()

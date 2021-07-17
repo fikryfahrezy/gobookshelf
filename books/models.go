@@ -32,7 +32,7 @@ func GetAllBooks() []bookModel {
 	return b
 }
 
-func GetSelectedBooks(q getBookQuery) []bookModel {
+func GetSelectedBooks(q GetBookQuery) []bookModel {
 	b := []bookModel{}
 	common.Read(&b)
 	var nb []bookModel

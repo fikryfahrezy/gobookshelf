@@ -1,0 +1,132 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+:root {
+  --w: 800px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', sans-serif;
+  box-sizing: border-box;
+}
+
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  padding: 50px 0;
+  text-align: center;
+}
+
+main {
+  padding: 25px 0;
+  flex-grow: 1;
+}
+
+main > div {
+  max-width: var(--w);
+  margin: 0 auto;
+}
+
+.grid-header {
+  display: flex;
+  margin: 0 5px 15px;
+  justify-content: end;
+}
+
+.grid-header > form {
+  display: flex;
+  flex-grow: 1;
+}
+
+.grid-header > form > input {
+  flex-grow: 1;
+  margin-right: 10px;
+}
+
+.grid-header > form > button {
+  width: 50px;
+}
+
+.dialog-button {
+  width: 50px;
+  margin-left: 5px;
+  padding: 10px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--w) / 3), auto));
+}
+
+article > div {
+  padding: 10px;
+  margin: 5px;
+  border: 1px solid #b7b7b7;
+  border-radius: 5px;
+}
+
+article .id {
+  display: none;
+}
+
+summary {
+  cursor: pointer;
+}
+
+footer {
+  height: 50px;
+  display: grid;
+  place-items: center;
+}
+
+.dialog {
+  display: grid;
+  position: fixed;
+  width: 100vw;
+  min-height: 100vh;
+  background-color: #00000021;
+  top: 0;
+  place-items: center;
+}
+
+.dialog > div {
+  max-width: 800px;
+  /* width: 100vw; */
+  padding: 10px;
+  border-radius: 5px;
+  background-color: #fff;
+}
+
+.dialog h2 {
+  text-align: center;
+}
+
+.post-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.post-form > div {
+  display: flex;
+  justify-content: end;
+}
+
+input[name='year'],
+input[name='pageCount'],
+input[name='readPage'] {
+  width: 100px;
+}
+
+.post-form > div > button {
+  width: 50px;
+  margin: 0 5px;
+}
+
+.none {
+  display: none;
+}

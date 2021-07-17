@@ -30,7 +30,7 @@ func (b *bookModelValidator) Validate() (string, bool) {
 	return "", true
 }
 
-type getBookQuery struct {
+type GetBookQuery struct {
 	Name     string
 	Reading  string
 	Finished string
