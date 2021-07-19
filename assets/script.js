@@ -3,22 +3,18 @@ const searchField = document.getElementById('search-field');
 const dialogBtn = document.getElementById('dialog-button');
 const dialog = document.getElementById('dialog');
 const cancelDialogBtn = document.getElementById('cancel-dialog');
+const submitBtn = document.getElementById('submit-btn');
 const postForm = document.getElementById('post-form');
+
+const smtBtnTxt = submitBtn.innerText;
+let method = 'POST';
+let bookId = '';
 
 const toogleDialog = function toogleDialog() {
   dialog.classList.toggle('none');
 };
 
-const deleteBook = function deleteBook(id) {
-  console.log(id);
-};
-
-const getDetail = function getDetail(id) {
-  console.log(id);
-};
-
-const updateBook = function updateBook(id) {
-  toogleDialog();
+const setFormField = function setFormField(id) {
   const name = document.getElementById(`name-${id}`).innerText;
   document.getElementById('form-name').value = name;
 
@@ -49,20 +45,89 @@ const updateBook = function updateBook(id) {
   }
 };
 
+const setFormButtonName = function setFormButtonName() {
+  if (method.toUpperCase() === 'PUT') {
+    submitBtn.innerText = 'Update';
+  } else {
+    submitBtn.innerText = smtBtnTxt;
+  }
+};
+
+const deleteBook = function deleteBook(id) {
+  fetch(`/books/${id}`, {
+    method: 'DELETE',
+  })
+    .then((res) => res.json())
+    .catch((err) => {
+      console.log(err);
+    })
+    .finally(() => {
+      location.reload();
+    });
+};
+
+const updateBook = function updateBook(id) {
+  toogleDialog();
+
+  method = 'PUT';
+  bookId = id;
+
+  setFormField(id);
+  setFormButtonName();
+};
+
 dialogBtn.addEventListener('click', () => {
   toogleDialog();
+
+  method = 'POST';
+  bookId = '';
+
+  setFormButtonName();
 });
 
 cancelDialogBtn.addEventListener('click', () => {
   toogleDialog();
+
+  method = 'POST';
+  bookId = '';
 });
 
 searchForm.addEventListener('submit', (e) => {
   e.preventDefault();
+
   location.search = `name=${searchField.value}`;
 });
 
 postForm.addEventListener('submit', (e) => {
   e.preventDefault();
-  postForm.reset();
+
+  const form = new FormData(e.target);
+  const data = {
+    name: form.get('name'),
+    year: Number(form.get('year')),
+    author: form.get('author'),
+    summary: form.get('summary'),
+    publisher: form.get('publisher'),
+    pageCount: Number(form.get('pageCount')),
+    readPage: Number(form.get('readPage')),
+    reading: Boolean(Number(form.get('reading'))),
+  };
+
+  const url = bookId === '' ? '/books' : `/books/${bookId}`;
+  const formMethod = method.toUpperCase();
+
+  fetch(url, {
+    method: formMethod,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  })
+    .then((res) => res.json())
+    .catch((err) => {
+      console.log(err);
+    })
+    .finally(() => {
+      location.reload();
+    });
 });

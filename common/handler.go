@@ -33,64 +33,7 @@ func (r *RouteChild) CreateFn(mtd string, fn func(http.ResponseWriter, *http.Req
 	r.Fn[mtd] = fn
 }
 
-// Deprecated: Not using this anymore (Deleted Soon)
-// var Routes = make(map[string]map[string]func(http.ResponseWriter, *http.Request))
-
 var Routes = make(map[string]RouteChild)
-
-func getRoute(url, mtd string) func(http.ResponseWriter, *http.Request) {
-	s := strings.Split(url, "/")
-	s = s[1:]
-	if len(s) == 1 {
-		if h := Routes["/"+s[0]].Fn[mtd]; h != nil {
-			return h
-		}
-	}
-	var l RouteChild
-	for i, v := range s {
-		v = "/" + v
-		if i == 0 {
-			l = Routes[v]
-		}
-		if f := l.Fn[mtd]; f != nil && i == len(s)-1 {
-			return f
-		}
-		if l.Child != nil {
-			l = *l.Child
-		}
-	}
-	return nil
-}
-
-func MakeHandler(w http.ResponseWriter, r *http.Request) {
-	m := routeMethods[strings.ToUpper(r.Method)]
-	if m == "" {
-		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-		return
-	}
-	// Old Get Route
-	// re := regexp.MustCompile(`^([^/]*/[^/]*/).*$`)
-	// u := re.ReplaceAllString(r.URL.Path, "$1")
-	// rt := Routes[u][m]
-	rt := getRoute(r.URL.Path, m)
-	if rt == nil {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-		return
-	}
-	rt(w, r)
-}
-
-// Deprecated: Not using this anymore (Deleted Soon)
-// func oldRegisterHandler(mtd string, url string, fn http.HandlerFunc) {
-// 	m := routeMethods[strings.ToUpper(mtd)]
-// 	if m == "" {
-// 		return
-// 	}
-// 	if ro := Routes[url]; ro == nil {
-// 		Routes[url] = make(map[string]func(http.ResponseWriter, *http.Request))
-// 	}
-// 	Routes[url][mtd] = fn
-// }
 
 func routeChild(r *RouteChild, i, m int, mtd string, s []string, fn func(http.ResponseWriter, *http.Request)) *RouteChild {
 	nr := r
@@ -117,35 +60,98 @@ func routeChild(r *RouteChild, i, m int, mtd string, s []string, fn func(http.Re
 }
 
 func registerHandler(mtd, url string, fn func(http.ResponseWriter, *http.Request)) {
-	s := strings.Split(url, "/")
-	s = s[1:]
-	l := len(s)
-	if l == 0 {
-		return
+	if strings.Contains(url, ":") {
+		s := strings.Split(url, "/")
+		s = s[1:]
+		l := len(s)
+		if l == 0 {
+			return
+		}
+		fe := s[0]
+		r := "/"
+		if !strings.HasPrefix(fe, ":") {
+			r += fe
+		} else {
+			// Ref: How to prepend int to slice
+			// https://stackoverflow.com/questions/53737435/how-to-prepend-int-to-slice
+			s = append(s, "")
+			copy(s[1:], s)
+			s[0] = ""
+			l = len(s)
+		}
+		o := Routes[r]
+		Routes[r] = *routeChild(&o, 0, l, mtd, s, fn)
+	} else {
+		o := Routes[url]
+		if o.Route == "" {
+			o = RouteChild{Depth: 0, Route: url}
+		}
+		o.CreateFn(mtd, fn)
+		if Routes[url].Route == "" {
+			Routes[url] = o
+		}
 	}
-	r := "/" + s[0]
-	o := Routes[r]
-	Routes[r] = *routeChild(&o, 0, l, mtd, s, fn)
 }
 
-func HanlderPOST(url string, fn http.HandlerFunc) {
-	// oldRegisterHandler("POST", url, fn)
+func HandlerPOST(url string, fn http.HandlerFunc) {
 	registerHandler("POST", url, fn)
 }
 
-func HanlderGET(url string, fn http.HandlerFunc) {
-	// oldRegisterHandler("GET", url, fn)
+func HandlerGET(url string, fn http.HandlerFunc) {
 	registerHandler("GET", url, fn)
 }
 
-func HanlderPUT(url string, fn http.HandlerFunc) {
-	// oldRegisterHandler("PUT", url, fn)
+func HandlerPUT(url string, fn http.HandlerFunc) {
 	registerHandler("PUT", url, fn)
 }
 
-func HanlderDELETE(url string, fn http.HandlerFunc) {
-	// oldRegisterHandler("DELETE", url, fn)
+func HandlerDELETE(url string, fn http.HandlerFunc) {
 	registerHandler("DELETE", url, fn)
+}
+
+func getRoute(url, mtd string) func(http.ResponseWriter, *http.Request) {
+	if r := Routes[url]; r.Route == url && r.Fn[mtd] != nil {
+		return r.Fn[mtd]
+	}
+	s := strings.Split(url, "/")
+	s = s[1:]
+	if len(s) == 1 {
+		if h := Routes["/"+s[0]].Fn[mtd]; h != nil {
+			return h
+		}
+	}
+	var l RouteChild
+	for i, v := range s {
+		v = "/" + v
+		if i == 0 {
+			if r, rc := Routes[v], Routes["/"].Child; r.Route == "" && rc != nil {
+				l = *rc
+			} else {
+				l = r
+			}
+		}
+		if f := l.Fn[mtd]; f != nil && i == len(s)-1 {
+			return f
+		}
+		if l.Child != nil {
+			l = *l.Child
+		}
+	}
+	return nil
+}
+
+func MakeHandler(w http.ResponseWriter, r *http.Request) {
+	m := routeMethods[strings.ToUpper(r.Method)]
+	if m == "" {
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+	rt := getRoute(r.URL.Path, m)
+	if rt == nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	rt(w, r)
 }
 
 func InitServer(p int) {
@@ -196,7 +202,6 @@ func DecodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) *Ma
 	if err != nil {
 		var syntaxError *json.SyntaxError
 		var unmarshalTypeError *json.UnmarshalTypeError
-
 		switch {
 		// Catch any syntax errors in the JSON and send an error message
 		// which interpolates the location of the problem to make it
@@ -247,7 +252,6 @@ func DecodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) *Ma
 		default:
 			return &MalformedRequest{http.StatusInternalServerError, err.Error()}
 		}
-
 	}
 
 	// Otherwise default to logging the error and sending a 500 Internal
@@ -257,7 +261,6 @@ func DecodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) *Ma
 		msg := "Request body must only contain a single JSON object"
 		err = &MalformedRequest{http.StatusBadRequest, msg}
 	}
-
 	return nil
 }
 
@@ -267,38 +270,31 @@ func ReqQuery(r *http.Request) (func(n string) string, error) {
 		return nil, err
 	}
 	q := u.Query()
-
 	return func(n string) string {
 		return q.Get(n)
 	}, nil
 }
 
-// Deprecated: Not using this anymore (Deleted Soon)
-// func RouteId(w http.ResponseWriter, u string) (string, *MalformedRequest) {
-// 	s := strings.SplitAfter(u, "/")
-// 	r := s[len(s)-1]
-// 	if r == "" {
-// 		return "", &MalformedRequest{http.StatusNotFound, http.StatusText(http.StatusNotFound)}
-// 	}
-// 	return r, nil
-// }
-
 func ReqParams(r *http.Request) func(p string) string {
 	s := strings.Split(r.URL.Path, "/")
 	s = s[1:]
 	return func(p string) string {
-		if len(s) == 1 {
-			if r := Routes["/:id"]; r.Dynamic && strings.Split(r.Route, "/:")[1] == p {
-				return s[0]
-			}
-		}
 		var l RouteChild
+		isSls := false
 		for i, v := range s {
 			v = "/" + v
 			if i == 0 {
-				l = Routes[v]
+				if r := Routes[v]; r.Route == "" {
+					l = *Routes["/"].Child
+					isSls = true
+				} else {
+					l = r
+				}
 			}
 			if l.Dynamic && strings.Split(l.Route, "/:")[1] == p {
+				if isSls {
+					return s[l.Depth-1]
+				}
 				return s[l.Depth]
 			}
 			if l.Child != nil {

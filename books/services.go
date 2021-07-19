@@ -8,7 +8,6 @@ import (
 
 func newBook(o string, ob *bookModel, nb bookModelValidator) {
 	t := time.Now().UTC().String()
-	ob.Id = common.RandString(5)
 	ob.Name = nb.Name
 	ob.Year = nb.Year
 	ob.Author = nb.Author
@@ -20,6 +19,7 @@ func newBook(o string, ob *bookModel, nb bookModelValidator) {
 	ob.Finished = nb.ReadPage == nb.PageCount
 	ob.UpdatedAt = t
 	if o == "CREATE" {
+		ob.Id = common.RandString(5)
 		ob.InsertedAt = t
 	}
 }

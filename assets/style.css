@@ -45,16 +45,14 @@ main > div {
 
 .grid-header > form > input {
   flex-grow: 1;
-  margin-right: 10px;
 }
 
 .grid-header > form > button {
-  width: 50px;
+  padding: 10px;
+  margin: 0 5 0 10;
 }
 
 .dialog-button {
-  width: 50px;
-  margin-left: 5px;
   padding: 10px;
 }
 
@@ -68,6 +66,11 @@ article > div {
   margin: 5px;
   border: 1px solid #b7b7b7;
   border-radius: 5px;
+}
+
+article > div > h3,
+article > div > p {
+  overflow-wrap: break-word;
 }
 
 article .id {
@@ -123,7 +126,7 @@ input[name='readPage'] {
 }
 
 .post-form > div > button {
-  width: 50px;
+  padding: 5px;
   margin: 0 5px;
 }
 

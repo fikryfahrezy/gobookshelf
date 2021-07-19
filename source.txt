@@ -43,6 +43,9 @@ https://stackoverflow.com/questions/22892120/how-to-generate-a-random-string-of-
 How to Parse a JSON Request Body in Go
 https://www.alexedwards.net/blog/how-to-properly-parse-a-json-request-body
 
+Correct way to initialize empty slice
+https://stackoverflow.com/questions/29164375/correct-way-to-initialize-empty-slice
+
 What is the difference between `Host` and `URL.Host` for golang `http.Request`?
 https://stackoverflow.com/questions/42921567/what-is-the-difference-between-host-and-url-host-for-golang-http-request
 
@@ -52,8 +55,35 @@ https://stackoverflow.com/questions/28899675/include-js-file-in-go-template
 Golang. What to use? http.ServeFile(..) or http.FileServer(..)?
 https://stackoverflow.com/questions/28793619/golang-what-to-use-http-servefile-or-http-fileserver
 
+Why can I type alias functions and use them without casting?
+https://stackoverflow.com/questions/19334542/why-can-i-type-alias-functions-and-use-them-without-casting
+
+How to prepend int to slice
+https://stackoverflow.com/questions/53737435/how-to-prepend-int-to-slice
+
+How to get the address of a function in go?
+https://stackoverflow.com/questions/41043462/how-to-get-the-address-of-a-function-in-go
+
+golang reflect get closure function pointer
+https://stackoverflow.com/a/36127142/12976234
+
+How to compare 2 functions in Go?
+https://stackoverflow.com/questions/34901307/how-to-compare-2-functions-in-go/34901677
+
 Testing Your (HTTP) Handlers in Go
 https://www.cloudbees.com/blog/testing-http-handlers-go
 
 Testing in Go: HTTP Servers
 https://ieftimov.com/post/testing-in-go-testing-http-servers/
+
+
+# Non-related to GO
+
+What is the difference between “word-break: break-all” versus “word-wrap: break-word” in CSS
+https://stackoverflow.com/questions/1795109/what-is-the-difference-between-word-break-break-all-versus-word-wrap-break
+
+What is the difference between CMD and ENTRYPOINT in a Dockerfile?
+https://stackoverflow.com/questions/21553353/what-is-the-difference-between-cmd-and-entrypoint-in-a-dockerfile
+
+Copy directory to another directory using ADD command
+https://stackoverflow.com/questions/26504846/copy-directory-to-another-directory-using-add-command

@@ -14,14 +14,14 @@ func rootPage(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	common.InitDB()
-	common.HanlderGET("/", rootPage)
-	common.HanlderGET("/pages", pages.Page)
-	common.HanlderGET("/matrix", pages.Matrix)
-	common.HanlderPOST("/books", books.Post)
-	common.HanlderGET("/books", books.GetAll)
-	common.HanlderGET("/books/:id", books.GetOne)
-	common.HanlderPUT("/books/:id", books.Put)
-	common.HanlderDELETE("/books/:id", books.Delete)
+	common.HandlerGET("/", rootPage)
+	common.HandlerGET("/pages", pages.Page)
+	common.HandlerGET("/matrix", pages.Matrix)
+	common.HandlerPOST("/books", books.Post)
+	common.HandlerGET("/books", books.GetAll)
+	common.HandlerGET("/books/:id", books.GetOne)
+	common.HandlerPUT("/books/:id", books.Put)
+	common.HandlerDELETE("/books/:id", books.Delete)
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 	common.InitServer(8080)
 }
