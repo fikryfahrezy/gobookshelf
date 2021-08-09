@@ -1,4 +1,4 @@
-package common
+package utils
 
 import (
 	"math/rand"
@@ -19,7 +19,7 @@ var src = rand.NewSource(time.Now().UnixNano())
 // https://stackoverflow.com/questions/22892120/how-to-generate-a-random-string-of-a-fixed-length-in-go
 func RandString(n int) string {
 	sb := strings.Builder{}
-	sb.Grow(n)
+  sb.Grow(n)
 	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
 	for i, cache, remain := n-1, src.Int63(), letterIdxMax; i >= 0; {
 		if remain == 0 {

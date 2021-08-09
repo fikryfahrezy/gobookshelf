@@ -264,8 +264,8 @@ func DecodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) *Ma
 	return nil
 }
 
-func ReqQuery(r *http.Request) (func(n string) string, error) {
-	u, err := url.Parse(r.URL.String())
+func ReqQuery(r string) (func(n string) string, error) {
+	u, err := url.Parse(r)
 	if err != nil {
 		return nil, err
 	}
@@ -275,8 +275,8 @@ func ReqQuery(r *http.Request) (func(n string) string, error) {
 	}, nil
 }
 
-func ReqParams(r *http.Request) func(p string) string {
-	s := strings.Split(r.URL.Path, "/")
+func ReqParams(u string) func(p string) string {
+	s := strings.Split(u, "/")
 	s = s[1:]
 	return func(p string) string {
 		var l RouteChild

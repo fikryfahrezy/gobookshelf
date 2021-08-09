@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/fikryfahrezy/gobookshelf/common"
+	"github.com/fikryfahrezy/gobookshelf/data"
 )
 
 type bookModel struct {
@@ -23,18 +23,18 @@ type bookModel struct {
 }
 
 func (b *bookModel) Save() {
-	common.Insert(b)
+	data.Insert(b)
 }
 
 func GetAllBooks() []bookModel {
 	var b []bookModel
-	common.Read(&b)
+	data.Read(&b)
 	return b
 }
 
 func GetSelectedBooks(q GetBookQuery) []bookModel {
 	b := []bookModel{}
-	common.Read(&b)
+	data.Read(&b)
 	var nb []bookModel
 	n, f, d := q.Name, q.Finished, q.Reading
 	for _, v := range b {
@@ -61,7 +61,7 @@ func (b *bookModel) Update() {
 			bs[i] = *b
 		}
 	}
-	common.Update(bs)
+	data.Update(bs)
 }
 
 func (b *bookModel) Delete() {
@@ -73,5 +73,5 @@ func (b *bookModel) Delete() {
 			bs = bs[:l]
 		}
 	}
-	common.Update(bs)
+	data.Update(bs)
 }

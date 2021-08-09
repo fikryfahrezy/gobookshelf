@@ -28,7 +28,7 @@ func Post(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAll(w http.ResponseWriter, r *http.Request) {
-	q, err := common.ReqQuery(r)
+	q, err := common.ReqQuery(r.URL.String())
 	if err != nil {
 		res := commonResponse{"fail", err.Error(), nil}
 		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
@@ -43,7 +43,7 @@ func GetAll(w http.ResponseWriter, r *http.Request) {
 
 func GetOne(w http.ResponseWriter, r *http.Request) {
 	var res commonResponse
-	p := common.ReqParams(r)
+	p := common.ReqParams(r.URL.Path)
 	id := p("id")
 	if id == "" {
 		res = commonResponse{"fail", "Not Found", nil}
@@ -76,7 +76,7 @@ func Put(w http.ResponseWriter, r *http.Request) {
 		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
-	p := common.ReqParams(r)
+	p := common.ReqParams(r.URL.String())
 	id := p("id")
 	if id == "" {
 		res = commonResponse{"fail", "Not Found", nil}
@@ -96,7 +96,7 @@ func Put(w http.ResponseWriter, r *http.Request) {
 
 func Delete(w http.ResponseWriter, r *http.Request) {
 	var res commonResponse
-	p := common.ReqParams(r)
+	p := common.ReqParams(r.URL.Path)
 	id := p("id")
 	if id == "" {
 		res = commonResponse{"fail", "Not Found", nil}

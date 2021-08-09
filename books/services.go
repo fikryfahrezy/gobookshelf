@@ -3,7 +3,7 @@ package books
 import (
 	"time"
 
-	"github.com/fikryfahrezy/gobookshelf/common"
+	"github.com/fikryfahrezy/gobookshelf/utils"
 )
 
 func newBook(o string, ob *bookModel, nb bookModelValidator) {
@@ -19,7 +19,7 @@ func newBook(o string, ob *bookModel, nb bookModelValidator) {
 	ob.Finished = nb.ReadPage == nb.PageCount
 	ob.UpdatedAt = t
 	if o == "CREATE" {
-		ob.Id = common.RandString(5)
+		ob.Id = utils.RandString(5)
 		ob.InsertedAt = t
 	}
 }

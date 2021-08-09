@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/fikryfahrezy/gobookshelf/common"
+	"github.com/fikryfahrezy/gobookshelf/data"
 )
 
 func createBook(id string) bookModel {
@@ -32,7 +33,7 @@ func createBook(id string) bookModel {
 // Testing Your (HTTP) Handlers in Go
 // https://www.cloudbees.com/blog/testing-http-handlers-go
 func TestHandlers(t *testing.T) {
-	common.Filename = "../data/books.json"
+	data.Filename = "../data/books.json"
 	cases := []struct {
 		testName              string
 		init                  func()

@@ -5,6 +5,7 @@ import (
 
 	"github.com/fikryfahrezy/gobookshelf/books"
 	"github.com/fikryfahrezy/gobookshelf/common"
+	"github.com/fikryfahrezy/gobookshelf/data"
 	"github.com/fikryfahrezy/gobookshelf/pages"
 )
 
@@ -13,7 +14,7 @@ func rootPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	common.InitDB()
+	data.InitDB()
 	common.HandlerGET("/", rootPage)
 	common.HandlerGET("/pages", pages.Page)
 	common.HandlerGET("/matrix", pages.Matrix)
