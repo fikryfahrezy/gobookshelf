@@ -25,7 +25,8 @@ func createBook(id string) bookModel {
 		"time",
 		"time",
 	}
-	b.Save()
+
+	data.Insert(b)
 
 	return b
 }

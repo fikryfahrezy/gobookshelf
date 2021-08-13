@@ -1,0 +1,11 @@
+Mandatory:
+- Register, error: duplicate email
+- Login
+- Logout, literally logout when back to previous page
+- Edit profile (email, nama, alamat, password) when login
+- Register/login with google oauth
+- hit salah satu Map API bebas untuk dapatkan alamat/koordinat
+- Hit one of Map API to get address/coordinate
+
+Opsional:
+- Forgot password (send link via email), reset password (from link)

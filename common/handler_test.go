@@ -182,6 +182,7 @@ func TestDynamicRoute(t *testing.T) {
 
 	for _, v := range cases {
 		p := ReqParams(v.reqUrl)
+
 		if p(v.paramName) != v.param {
 			t.FailNow()
 		}
@@ -235,6 +236,7 @@ func TestReqQuery(t *testing.T) {
 
 	for _, v := range cases {
 		p, _ := ReqQuery(v.reqUrl)
+
 		if p(v.queryName) != v.query {
 			t.FailNow()
 		}

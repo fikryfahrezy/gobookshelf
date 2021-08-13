@@ -7,6 +7,7 @@ import (
 	"github.com/fikryfahrezy/gobookshelf/common"
 	"github.com/fikryfahrezy/gobookshelf/data"
 	"github.com/fikryfahrezy/gobookshelf/pages"
+	"github.com/fikryfahrezy/gobookshelf/users"
 )
 
 func rootPage(w http.ResponseWriter, r *http.Request) {
@@ -23,6 +24,7 @@ func main() {
 	common.HandlerGET("/books/:id", books.GetOne)
 	common.HandlerPUT("/books/:id", books.Put)
 	common.HandlerDELETE("/books/:id", books.Delete)
+	common.HandlerPOST("/users", users.Registration)
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 	common.InitServer(8080)
 }

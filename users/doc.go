@@ -1,5 +1,5 @@
 /*
-The books module containing the book CRUD operation.
+The users module containing the user CRUD operation.
 
 models.go: definition of based data model
 
@@ -13,4 +13,4 @@ unit_test.go: for testing
 
 validators.go: request validations
 */
-package books
+package users

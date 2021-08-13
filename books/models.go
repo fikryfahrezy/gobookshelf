@@ -3,6 +3,7 @@ package books
 import (
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/fikryfahrezy/gobookshelf/data"
 )
@@ -23,20 +24,28 @@ type bookModel struct {
 }
 
 func (b *bookModel) Save() {
+	t := time.Now().UTC().String()
+	b.Id = t
+	b.InsertedAt = t
+	b.UpdatedAt = t
+
 	data.Insert(b)
 }
 
 func GetAllBooks() []bookModel {
 	var b []bookModel
 	data.Read(&b)
+
 	return b
 }
 
 func GetSelectedBooks(q GetBookQuery) []bookModel {
 	b := []bookModel{}
 	data.Read(&b)
+
 	var nb []bookModel
 	n, f, d := q.Name, q.Finished, q.Reading
+
 	for _, v := range b {
 		if pf, err := strconv.ParseBool(f); err == nil && pf == v.Finished {
 			nb = append(nb, v)
@@ -48,24 +57,30 @@ func GetSelectedBooks(q GetBookQuery) []bookModel {
 			nb = append(nb, v)
 		}
 	}
+
 	if nb == nil {
 		return b
 	}
+
 	return nb
 }
 
 func (b *bookModel) Update() {
+	b.UpdatedAt = time.Now().UTC().String()
 	bs := GetAllBooks()
+
 	for i, v := range bs {
 		if v.Id == b.Id {
 			bs[i] = *b
 		}
 	}
+
 	data.Update(bs)
 }
 
 func (b *bookModel) Delete() {
 	bs := GetAllBooks()
+
 	for i, v := range bs {
 		if v.Id == b.Id {
 			l := len(bs) - 1
@@ -73,5 +88,6 @@ func (b *bookModel) Delete() {
 			bs = bs[:l]
 		}
 	}
+
 	data.Update(bs)
 }

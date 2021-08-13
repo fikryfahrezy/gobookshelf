@@ -34,9 +34,11 @@ type booksResponse struct {
 
 func (s *BooksSerializer) Response() booksResponse {
 	b := booksResponse{}
+
 	for _, v := range s.Books {
 		b.Books = append(b.Books, book{v.Id, v.Name, v.Publisher})
 	}
+
 	return b
 }
 

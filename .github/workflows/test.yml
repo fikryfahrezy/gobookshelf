@@ -1,0 +1,19 @@
+# https://golangrepo.com/repo/mvdan-github-actions-golang-go-command-line
+name: Test
+on:
+  push:
+    branches:
+      - main
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout go
+        uses: actions/checkout@v2
+      - name: Setup go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15.x
+      - name: Run Testing
+        run: go test ./...
