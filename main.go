@@ -17,14 +17,15 @@ func rootPage(w http.ResponseWriter, r *http.Request) {
 func main() {
 	data.InitDB()
 	common.HandlerGET("/", rootPage)
-	common.HandlerGET("/pages", pages.Page)
+	common.HandlerGET("/home", pages.Home)
+	common.HandlerGET("/register", pages.Registration)
 	common.HandlerGET("/matrix", pages.Matrix)
 	common.HandlerPOST("/books", books.Post)
 	common.HandlerGET("/books", books.GetAll)
 	common.HandlerGET("/books/:id", books.GetOne)
 	common.HandlerPUT("/books/:id", books.Put)
 	common.HandlerDELETE("/books/:id", books.Delete)
-	common.HandlerPOST("/users", users.Registration)
+	common.HandlerPOST("/registration", users.Registration)
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 	common.InitServer(8080)
 }

@@ -5,12 +5,12 @@ import (
 	"time"
 )
 
-type UserDB struct {
+type userDB struct {
 	users map[time.Time]userModel
-	lock  sync.Mutex
+	lock  sync.RWMutex
 }
 
-func (udb *UserDB) Insert(u userModel) bool {
+func (udb *userDB) Insert(u userModel) bool {
 	udb.lock.Lock()
 	defer udb.lock.Unlock()
 
@@ -25,7 +25,7 @@ func (udb *UserDB) Insert(u userModel) bool {
 	return true
 }
 
-func (udb *UserDB) Update(u userModel) bool {
+func (udb *userDB) Update(u userModel) bool {
 	udb.lock.Lock()
 	defer udb.lock.Unlock()
 
@@ -57,7 +57,7 @@ func (udb *UserDB) Update(u userModel) bool {
 	return true
 }
 
-var Users = UserDB{users: make(map[time.Time]userModel)}
+var users = userDB{users: make(map[time.Time]userModel)}
 
 type userModel struct {
 	Id       string `json:"id"`
@@ -68,5 +68,5 @@ type userModel struct {
 }
 
 func (um *userModel) Save() {
-	Users.Insert(*um)
+	users.Insert(*um)
 }

@@ -5,16 +5,20 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/fikryfahrezy/gobookshelf/common"
 )
 
 func TestHandlers(t *testing.T) {
+	users.users = make(map[time.Time]userModel)
+
 	cases := []struct {
 		testName              string
 		init                  func()
 		url, method, bodydata string
 		expectedCode          int
+		exptedResult          int
 	}{
 		{
 			"Registration Success",
@@ -23,6 +27,16 @@ func TestHandlers(t *testing.T) {
 			"POST",
 			`{"email":"email@email.com","password":"password","name":"name","address":"address"}`,
 			http.StatusCreated,
+			1,
+		},
+		{
+			"Registration Fail, Not Valid Email",
+			func() {},
+			"/users",
+			"POST",
+			`{"email":"not-valid-email","password":"password","name":"name","address":"address"}`,
+			http.StatusUnprocessableEntity,
+			1,
 		},
 	}
 
@@ -42,6 +56,10 @@ func TestHandlers(t *testing.T) {
 		common.MakeHandler(rr, req)
 
 		if rr.Result().StatusCode != c.expectedCode {
+			t.FailNow()
+		}
+
+		if len(users.users) != c.exptedResult {
 			t.FailNow()
 		}
 	}

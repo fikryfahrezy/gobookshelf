@@ -11,6 +11,11 @@
   box-sizing: border-box;
 }
 
+nav {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .container {
   min-height: 100vh;
   display: flex;

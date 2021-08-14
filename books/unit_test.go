@@ -35,6 +35,8 @@ func createBook(id string) bookModel {
 // https://www.cloudbees.com/blog/testing-http-handlers-go
 func TestHandlers(t *testing.T) {
 	data.Filename = "../data/books.json"
+	data.InitDB()
+
 	cases := []struct {
 		testName              string
 		init                  func()

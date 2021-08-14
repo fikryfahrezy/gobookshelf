@@ -76,6 +76,21 @@ https://www.cloudbees.com/blog/testing-http-handlers-go
 Testing in Go: HTTP Servers
 https://ieftimov.com/post/testing-in-go-testing-http-servers/
 
+What is the difference between cookie and cookiejar?
+https://stackoverflow.com/questions/31270461/what-is-the-difference-between-cookie-and-cookiejar
+
+Golang Mutexes – What Is RWMutex For?
+https://dev.to/qvault/golang-mutexes-what-is-rwmutex-for-57a0
+
+Difference between Mutex and RWMutex
+https://programmer.help/blogs/difference-between-mutex-and-rwmutex.html
+
+Lock in Golang
+https://www.timqi.com/2020/08/02/lock-in-golang/
+
+What is the benefit of using RWMutex instead of Mutex?
+https://stackoverflow.com/questions/48861029/what-is-the-benefit-of-using-rwmutex-instead-of-mutex/48861083
+
 
 # Non-related to GO
 

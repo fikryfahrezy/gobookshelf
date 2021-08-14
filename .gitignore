@@ -1,7 +1,6 @@
 .vscode
 __debug_bin
 
-data/*
-!data/.gitkeep
+data/*.json
 
 *.exe
