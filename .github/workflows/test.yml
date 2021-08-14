@@ -1,6 +1,4 @@
 # https://golangrepo.com/repo/mvdan-github-actions-golang-go-command-line
-# https://reposhub.com/go/miscellaneous/mvdan-github-actions-golang.html
-# https://golangrepo.com/repo/mvdan-github-actions-golang-go-command-line
 name: Test
 on:
   push:
@@ -13,15 +11,18 @@ jobs:
     steps:
       - name: Checkout go
         uses: actions/checkout@v2
+
       - name: Setup go
         uses: actions/setup-go@v2
         with:
           go-version: 1.15.x
+
       - name: Build
-				env:
-					GOPROXY: "https://proxy.golang.org"
         run: go build .
-      - name: Test
         env:
-					GOPROXY: "https://proxy.golang.org"
+          GOPROXY: "https://proxy.golang.org"
+
+      - name: Test
         run: go test ./...
+        env:
+          GOPROXY: "https://proxy.golang.org"
