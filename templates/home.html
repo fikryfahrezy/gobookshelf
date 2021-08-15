@@ -10,7 +10,12 @@
   <body>
     <nav>
       <div>
+        {{if .IsLogin}}
+        <a href="/profile">Profile</a>
+        <a href="/logout">Logout</a>
+        {{else}}
         <a href="/register">Register</a>
+        {{end}}
       </div>
     </nav>
     <div class="container">

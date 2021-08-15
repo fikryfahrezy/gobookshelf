@@ -128,6 +128,6 @@ postForm.addEventListener('submit', (e) => {
       console.log(err);
     })
     .finally(() => {
-      location.reload();
+      window.location.reload();
     });
 });

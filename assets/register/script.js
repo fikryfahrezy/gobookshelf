@@ -13,8 +13,8 @@ form.addEventListener('submit', (e) => {
     method: 'POST',
     body: JSON.stringify(data),
   })
-    .then((res) => {
-      console.log(res);
+    .then(() => {
+      window.location = '/home';
     })
     .catch((err) => {
       console.log(err);

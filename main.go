@@ -19,6 +19,7 @@ func main() {
 	common.HandlerGET("/", rootPage)
 	common.HandlerGET("/home", pages.Home)
 	common.HandlerGET("/register", pages.Registration)
+	common.HandlerGET("/logout", pages.Logout)
 	common.HandlerGET("/matrix", pages.Matrix)
 	common.HandlerPOST("/books", books.Post)
 	common.HandlerGET("/books", books.GetAll)

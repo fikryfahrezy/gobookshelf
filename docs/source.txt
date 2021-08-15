@@ -91,6 +91,14 @@ https://www.timqi.com/2020/08/02/lock-in-golang/
 What is the benefit of using RWMutex instead of Mutex?
 https://stackoverflow.com/questions/48861029/what-is-the-benefit-of-using-rwmutex-instead-of-mutex/48861083
 
+Using GitHub Actions with Go
+https://presstige.io/p/Using-GitHub-Actions-with-Go-2ca9744b531f4f21bdae9976d1ccbb58
+
+GitHub Actions as CI for Go
+https://golangrepo.com/repo/mvdan-github-actions-golang-go-command-line
+
+GitHub Actions as CI for Go
+https://reposhub.com/go/miscellaneous/mvdan-github-actions-golang.html
 
 # Non-related to GO
 

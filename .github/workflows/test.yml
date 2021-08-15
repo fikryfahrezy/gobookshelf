@@ -1,4 +1,3 @@
-# https://golangrepo.com/repo/mvdan-github-actions-golang-go-command-line
 name: Test
 on:
   push:
@@ -20,9 +19,9 @@ jobs:
       - name: Build
         run: go build .
         env:
-          GOPROXY: "https://proxy.golang.org"
+          GOPROXY: 'https://proxy.golang.org'
 
       - name: Test
         run: go test ./...
         env:
-          GOPROXY: "https://proxy.golang.org"
+          GOPROXY: 'https://proxy.golang.org'

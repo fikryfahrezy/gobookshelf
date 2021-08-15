@@ -1,15 +1,5 @@
 package books
 
-type commonResponse struct {
-	Status  string      `json:"status"`
-	Message string      `json:"message,omitempty"`
-	Data    interface{} `json:"data,omitempty"`
-}
-
-func (c *commonResponse) Response() *commonResponse {
-	return c
-}
-
 type bookIdResponse struct {
 	BookId string `json:"bookId"`
 }
@@ -37,6 +27,10 @@ func (s *BooksSerializer) Response() booksResponse {
 
 	for _, v := range s.Books {
 		b.Books = append(b.Books, book{v.Id, v.Name, v.Publisher})
+	}
+
+	if b.Books == nil {
+		b.Books = make([]book, 0)
 	}
 
 	return b

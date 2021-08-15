@@ -34,6 +34,16 @@ func (r *RouteChild) CreateFn(mtd string, fn func(http.ResponseWriter, *http.Req
 	r.Fn[mtd] = fn
 }
 
+type CommonResponse struct {
+	Status  string      `json:"status"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
+}
+
+func (c *CommonResponse) Response() *CommonResponse {
+	return c
+}
+
 var Routes = make(map[string]RouteChild)
 
 func routeChild(r *RouteChild, i, m int, mtd string, s []string, fn func(http.ResponseWriter, *http.Request)) *RouteChild {
@@ -231,7 +241,6 @@ func DecodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) *Ma
 	dec.DisallowUnknownFields()
 
 	err := dec.Decode(&dst)
-
 	if err != nil {
 		var syntaxError *json.SyntaxError
 		var unmarshalTypeError *json.UnmarshalTypeError
@@ -307,7 +316,6 @@ func DecodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) *Ma
 
 func ReqQuery(r string) (func(n string) string, error) {
 	u, err := url.Parse(r)
-
 	if err != nil {
 		return nil, err
 	}
@@ -353,6 +361,13 @@ func ReqParams(u string) func(p string) string {
 
 		return ""
 	}
+}
+
+func AllowCORS(w *http.ResponseWriter) {
+	rw := *w
+	rw.Header().Set("Access-Control-Allow-Origin", "*")
+	rw.Header().Set("Access-Control-Request-Methods", "GET")
+	rw.Header().Set("Access-Control-Allow-Headers", "Content-Type, Accept")
 }
 
 func ResJSON(w http.ResponseWriter, s int, v interface{}) {
