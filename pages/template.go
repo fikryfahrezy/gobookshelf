@@ -6,6 +6,7 @@ import (
 
 	"github.com/fikryfahrezy/gobookshelf/books"
 	"github.com/fikryfahrezy/gobookshelf/common"
+	"github.com/fikryfahrezy/gobookshelf/users"
 )
 
 var templates = template.Must(template.ParseGlob("templates/*"))
@@ -16,14 +17,15 @@ func Matrix(w http.ResponseWriter, r *http.Request) {
 
 func Home(w http.ResponseWriter, r *http.Request) {
 	isLogin := false
-	_, err := r.Cookie("auth")
+	_, err := r.Cookie(users.AuthSessionKey)
 	if err == nil {
 		isLogin = true
 	}
 
 	q, err := common.ReqQuery(r.URL.String())
 	if err != nil {
-		http.Redirect(w, r, "/", http.StatusInternalServerError)
+		http.Redirect(w, r, "/matrix", http.StatusInternalServerError)
+		return
 	}
 
 	b := books.GetBooks(books.GetBookQuery{Name: q("name")})
@@ -39,18 +41,38 @@ func Home(w http.ResponseWriter, r *http.Request) {
 }
 
 func Registration(w http.ResponseWriter, r *http.Request) {
-	q, err := common.ReqQuery(r.URL.String())
-	if err != nil {
-		http.Redirect(w, r, "/", http.StatusInternalServerError)
+	_, err := r.Cookie(users.AuthSessionKey)
+	if err == nil {
+		http.Redirect(w, r, "/home", http.StatusFound)
+		return
 	}
 
-	b := books.GetBooks(books.GetBookQuery{Name: q("name")})
-	d := struct{ Books interface{} }{b}
-
-	templates.ExecuteTemplate(w, "register.html", d)
+	templates.ExecuteTemplate(w, "register.html", nil)
 }
 
-func Logout(w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, &http.Cookie{Name: "auth", MaxAge: -1})
-	http.Redirect(w, r, "/home", http.StatusFound)
+func Login(w http.ResponseWriter, r *http.Request) {
+	_, err := r.Cookie(users.AuthSessionKey)
+	if err == nil {
+		http.Redirect(w, r, "/home", http.StatusFound)
+		return
+	}
+
+	templates.ExecuteTemplate(w, "login.html", nil)
+}
+
+func Profile(w http.ResponseWriter, r *http.Request) {
+	c, err := r.Cookie(users.AuthSessionKey)
+	if err != nil {
+		http.Redirect(w, r, "/home", http.StatusFound)
+		return
+	}
+
+	cv := users.UserSessions.Get(c.Value)
+	u, ok := users.GetUserById(cv)
+
+	if !ok {
+		http.Redirect(w, r, "/home", http.StatusFound)
+	}
+
+	templates.ExecuteTemplate(w, "profile.html", u)
 }

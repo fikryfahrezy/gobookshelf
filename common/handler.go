@@ -34,6 +34,15 @@ func (r *RouteChild) CreateFn(mtd string, fn func(http.ResponseWriter, *http.Req
 	r.Fn[mtd] = fn
 }
 
+type MalformedRequest struct {
+	Status  int    `json:"status"`
+	Message string `json:"message"`
+}
+
+func (mr *MalformedRequest) Error() string {
+	return mr.Message
+}
+
 type CommonResponse struct {
 	Status  string      `json:"status"`
 	Message string      `json:"message"`
@@ -199,15 +208,6 @@ func InitServer(p int) {
 	}
 
 	log.Fatal(http.ListenAndServe(":"+fmt.Sprint(p), nil))
-}
-
-type MalformedRequest struct {
-	Status  int    `json:"status"`
-	Message string `json:"message"`
-}
-
-func (mr *MalformedRequest) Error() string {
-	return mr.Message
 }
 
 // How to Parse a JSON Request Body in Go (with Validation)

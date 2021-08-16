@@ -10,7 +10,7 @@ func Post(w http.ResponseWriter, r *http.Request) {
 	var b bookReqValidator
 	err := common.DecodeJSONBody(w, r, &b)
 	if err != nil {
-		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: make([]interface{}, 0)}
+		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
 		common.ResJSON(w, err.Status, res.Response())
 		return
@@ -19,7 +19,7 @@ func Post(w http.ResponseWriter, r *http.Request) {
 	msg, ok := b.Validate()
 
 	if !ok {
-		res := common.CommonResponse{Status: "fail", Message: msg, Data: make([]interface{}, 0)}
+		res := common.CommonResponse{Status: "fail", Message: msg, Data: nil}
 
 		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
@@ -58,7 +58,7 @@ func GetOne(w http.ResponseWriter, r *http.Request) {
 	id := p("id")
 
 	if id == "" {
-		res := common.CommonResponse{Status: "fail", Message: "Not Found", Data: make([]interface{}, 0)}
+		res := common.CommonResponse{Status: "fail", Message: "Not Found", Data: nil}
 
 		common.ResJSON(w, http.StatusNotFound, res.Response())
 		return
@@ -67,7 +67,7 @@ func GetOne(w http.ResponseWriter, r *http.Request) {
 	b, ok := getBook(id)
 
 	if !ok {
-		res := common.CommonResponse{Status: "fail", Message: "Not Found", Data: make([]interface{}, 0)}
+		res := common.CommonResponse{Status: "fail", Message: "Not Found", Data: nil}
 
 		common.ResJSON(w, http.StatusNotFound, res.Response())
 		return
@@ -83,7 +83,7 @@ func Put(w http.ResponseWriter, r *http.Request) {
 	var b bookReqValidator
 	err := common.DecodeJSONBody(w, r, &b)
 	if err != nil {
-		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: make([]interface{}, 0)}
+		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
 		common.ResJSON(w, err.Status, res.Response())
 		return
@@ -92,7 +92,7 @@ func Put(w http.ResponseWriter, r *http.Request) {
 	msg, ok := b.Validate()
 
 	if !ok {
-		res := common.CommonResponse{Status: "fail", Message: msg, Data: make([]interface{}, 0)}
+		res := common.CommonResponse{Status: "fail", Message: msg, Data: nil}
 
 		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
@@ -102,7 +102,7 @@ func Put(w http.ResponseWriter, r *http.Request) {
 	id := p("id")
 
 	if id == "" {
-		res := common.CommonResponse{Status: "fail", Message: "Not Found", Data: make([]interface{}, 0)}
+		res := common.CommonResponse{Status: "fail", Message: "Not Found", Data: nil}
 
 		common.ResJSON(w, http.StatusNotFound, res.Response())
 		return
@@ -114,7 +114,7 @@ func Put(w http.ResponseWriter, r *http.Request) {
 	nb, ok = updateBook(id, nb)
 
 	if !ok {
-		res := common.CommonResponse{Status: "fail", Message: "Book with requested ID not found", Data: make([]interface{}, 0)}
+		res := common.CommonResponse{Status: "fail", Message: "Book with requested ID not found", Data: nil}
 
 		common.ResJSON(w, http.StatusNotFound, res.Response())
 		return
@@ -131,7 +131,7 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 	id := p("id")
 
 	if id == "" {
-		res := common.CommonResponse{Status: "fail", Message: "Not Found", Data: make([]interface{}, 0)}
+		res := common.CommonResponse{Status: "fail", Message: "Not Found", Data: nil}
 
 		common.ResJSON(w, http.StatusNotFound, res.Response())
 		return
@@ -140,7 +140,7 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 	ob, ok := deleteBook(id)
 
 	if !ok {
-		res := common.CommonResponse{Status: "fail", Message: "Book with requested ID not found", Data: make([]interface{}, 0)}
+		res := common.CommonResponse{Status: "fail", Message: "Book with requested ID not found", Data: nil}
 
 		common.ResJSON(w, http.StatusNotFound, res.Response())
 		return

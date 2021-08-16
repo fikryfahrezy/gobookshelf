@@ -6,7 +6,7 @@ form.addEventListener('submit', (e) => {
   const form = new FormData(e.target);
   const data = Object.fromEntries(form.entries());
 
-  fetch('/registration', {
+  fetch('/userlogin', {
     headers: {
       'Content-Type': 'application/json',
     },

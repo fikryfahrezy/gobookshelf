@@ -31,7 +31,7 @@ func updateBook(id string, nb bookModel) (bookModel, bool) {
 		return b, ok
 	}
 
-	b.Update()
+	b.Update(nb)
 
 	return b, true
 }

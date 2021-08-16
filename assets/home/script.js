@@ -76,14 +76,15 @@ const updateBook = function updateBook(id) {
   setFormButtonName();
 };
 
-dialogBtn.addEventListener('click', () => {
-  toogleDialog();
+if (dialogBtn)
+  dialogBtn.addEventListener('click', () => {
+    toogleDialog();
 
-  method = 'POST';
-  bookId = '';
+    method = 'POST';
+    bookId = '';
 
-  setFormButtonName();
-});
+    setFormButtonName();
+  });
 
 cancelDialogBtn.addEventListener('click', () => {
   toogleDialog();

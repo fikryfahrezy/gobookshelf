@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/fikryfahrezy/gobookshelf/data"
+	"github.com/fikryfahrezy/gobookshelf/utils"
 )
 
 type bookModel struct {
@@ -25,11 +26,56 @@ type bookModel struct {
 
 func (b *bookModel) Save() {
 	t := time.Now().UTC().String()
-	b.Id = t
+	b.Id = utils.RandString(5)
 	b.InsertedAt = t
 	b.UpdatedAt = t
 
 	data.Insert(b)
+}
+
+func (b *bookModel) Update(nb bookModel) {
+	var ob bookModel
+	bs := GetAllBooks()
+	ci := -1
+
+	for i, v := range bs {
+		if v.Id == b.Id {
+			ci = i
+			ob = v
+			break
+		}
+	}
+
+	if ci >= 0 {
+		ob.Name = nb.Name
+		ob.Year = nb.Year
+		ob.Author = nb.Author
+		ob.Summary = nb.Summary
+		ob.Publisher = nb.Publisher
+		ob.PageCount = nb.PageCount
+		ob.ReadPage = nb.ReadPage
+		ob.Reading = nb.Reading
+		ob.Finished = nb.ReadPage == nb.PageCount
+		ob.UpdatedAt = time.Now().UTC().String()
+
+		bs[ci] = ob
+
+		data.Update(bs)
+	}
+}
+
+func (b *bookModel) Delete() {
+	bs := GetAllBooks()
+
+	for i, v := range bs {
+		if v.Id == b.Id {
+			l := len(bs) - 1
+			bs[i] = bs[l]
+			bs = bs[:l]
+		}
+	}
+
+	data.Update(bs)
 }
 
 func GetAllBooks() []bookModel {
@@ -63,31 +109,4 @@ func GetSelectedBooks(q GetBookQuery) []bookModel {
 	}
 
 	return nb
-}
-
-func (b *bookModel) Update() {
-	b.UpdatedAt = time.Now().UTC().String()
-	bs := GetAllBooks()
-
-	for i, v := range bs {
-		if v.Id == b.Id {
-			bs[i] = *b
-		}
-	}
-
-	data.Update(bs)
-}
-
-func (b *bookModel) Delete() {
-	bs := GetAllBooks()
-
-	for i, v := range bs {
-		if v.Id == b.Id {
-			l := len(bs) - 1
-			bs[i] = bs[l]
-			bs = bs[:l]
-		}
-	}
-
-	data.Update(bs)
 }

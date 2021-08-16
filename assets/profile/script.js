@@ -6,16 +6,16 @@ form.addEventListener('submit', (e) => {
   const form = new FormData(e.target);
   const data = Object.fromEntries(form.entries());
 
-  fetch('/registration', {
+  fetch('/updateprofile', {
     headers: {
       'Content-Type': 'application/json',
     },
-    method: 'POST',
+    method: 'PUT',
     body: JSON.stringify(data),
   })
     .then((res) => {
       if (res.status >= 200 && res.status < 300) {
-        window.location = '/home';
+        window.location.reload();
       }
     })
     .catch((err) => {
