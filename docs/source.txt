@@ -100,6 +100,13 @@ https://golangrepo.com/repo/mvdan-github-actions-golang-go-command-line
 GitHub Actions as CI for Go
 https://reposhub.com/go/miscellaneous/mvdan-github-actions-golang.html
 
+How to correctly use sync.Cond?
+https://stackoverflow.com/questions/36857167/how-to-correctly-use-sync-cond
+
+Goroutine IDs
+https://blog.sgmansfield.com/2015/12/goroutine-ids/
+
+
 # Non-related to GO
 
 What is the difference between “word-break: break-all” versus “word-wrap: break-word” in CSS

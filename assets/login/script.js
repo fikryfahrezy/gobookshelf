@@ -15,7 +15,7 @@ form.addEventListener('submit', (e) => {
   })
     .then((res) => {
       if (res.status >= 200 && res.status < 300) {
-        window.location = '/home';
+        window.location = '/';
       }
     })
     .catch((err) => {

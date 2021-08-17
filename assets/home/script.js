@@ -102,20 +102,15 @@ searchForm.addEventListener('submit', (e) => {
 postForm.addEventListener('submit', (e) => {
   e.preventDefault();
 
-  const form = new FormData(e.target);
-  const data = {
-    name: form.get('name'),
-    year: Number(form.get('year')),
-    author: form.get('author'),
-    summary: form.get('summary'),
-    publisher: form.get('publisher'),
-    pageCount: Number(form.get('pageCount')),
-    readPage: Number(form.get('readPage')),
-    reading: Boolean(Number(form.get('reading'))),
-  };
-
   const url = bookId === '' ? '/books' : `/books/${bookId}`;
   const formMethod = method.toUpperCase();
+  const form = new FormData(e.target);
+  const data = Object.fromEntries(form.entries());
+
+  data.year = Number(data.year);
+  data.pageCount = Number(data.pageCount);
+  data.readPage = Number(data.readPage);
+  data.reading = Boolean(Number(data.reading));
 
   fetch(url, {
     method: formMethod,

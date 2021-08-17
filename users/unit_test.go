@@ -15,38 +15,32 @@ func TestHandlers(t *testing.T) {
 
 	cases := []struct {
 		testName              string
-		init                  func()
+		init                  func(*http.Request)
 		url, method, bodydata string
 		expectedCode          int
 		exptedResult          int
-		cookieKey             string
-		cookieVal             string
 	}{
 		{
 			"Registration Success",
-			func() {},
+			func(r *http.Request) {},
 			"/registration",
 			"POST",
 			`{"email":"email@email.com","password":"password","name":"name","address":"address"}`,
 			http.StatusCreated,
 			1,
-			"c",
-			"",
 		},
 		{
 			"Registration Fail, Not Valid Email",
-			func() {},
+			func(r *http.Request) {},
 			"/registration",
 			"POST",
 			`{"email":"not-valid-email","password":"password","name":"name","address":"address"}`,
 			http.StatusUnprocessableEntity,
 			1,
-			"c",
-			"",
 		},
 		{
 			"Login Success",
-			func() {
+			func(r *http.Request) {
 				u := userModel{
 					Email:    "email@email2.com",
 					Password: "password",
@@ -60,12 +54,10 @@ func TestHandlers(t *testing.T) {
 			`{"email":"email@email2.com","password":"password"}`,
 			http.StatusOK,
 			2,
-			"c",
-			"",
 		},
 		{
 			"Login Fail, Password Not Match",
-			func() {
+			func(r *http.Request) {
 				u := userModel{
 					Email:    "email@email3.com",
 					Password: "password",
@@ -79,34 +71,28 @@ func TestHandlers(t *testing.T) {
 			`{"email":"email@email3.com","password":"not-password"}`,
 			http.StatusUnauthorized,
 			3,
-			"c",
-			"",
 		},
 		{
 			"Login Fail, User Not Registered",
-			func() {},
+			func(r *http.Request) {},
 			"/userlogin",
 			"POST",
 			`{"email":"email@email4.com","password":"password"}`,
 			http.StatusUnauthorized,
 			3,
-			"c",
-			"",
 		},
 		{
 			"Login Fail, Not Valid Email",
-			func() {},
+			func(r *http.Request) {},
 			"/userlogin",
 			"POST",
 			`{"email":"not-valid-email","password":"password"}`,
 			http.StatusUnprocessableEntity,
 			3,
-			"c",
-			"",
 		},
 		{
 			"Update Profile Success",
-			func() {
+			func(r *http.Request) {
 				u := userModel{
 					Id:       "1",
 					Email:    "email@email4.com",
@@ -115,44 +101,42 @@ func TestHandlers(t *testing.T) {
 					Address:  "Adress",
 				}
 				users.Insert(u)
-				UserSessions.session["1"] = u.Id
+
+				sKey := "1"
+				UserSessions.session[sKey] = u.Id
+				r.AddCookie(&http.Cookie{Name: AuthSessionKey, Value: sKey})
 			},
 			"/updateprofile",
-			"PUT",
+			"PATCH",
 			`{"name":"new name"}`,
 			http.StatusOK,
 			4,
-			AuthSessionKey,
-			"1",
 		},
 		{
 			"Update Profile Fail, Cookie Not Found",
-			func() {},
+			func(r *http.Request) {},
 			"/updateprofile",
-			"PUT",
+			"PATCH",
 			`{"email":"email@email5.com"}`,
 			http.StatusUnauthorized,
 			4,
-			"c",
-			"",
 		},
 	}
 
 	common.HandlerPOST("/registration", Registration)
 	common.HandlerPOST("/userlogin", Login)
-	common.HandlerPUT("/updateprofile", UpdateProfile)
+	common.HandlerPATCH("/updateprofile", UpdateProfile)
 
 	for _, c := range cases {
-		c.init()
 
 		// Use strings.NewReader() because:
 		// https://golang.org/pkg/strings/#NewReader
 		req, err := http.NewRequest(c.method, c.url, strings.NewReader(c.bodydata))
-		req.AddCookie(&http.Cookie{Name: c.cookieKey, Value: c.cookieVal})
-
 		if err != nil {
 			t.Fatal(err)
 		}
+
+		c.init(req)
 
 		rr := httptest.NewRecorder()
 		common.MakeHandler(rr, req)

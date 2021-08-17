@@ -4,32 +4,55 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Profile</title>
+    <title>Register</title>
     <link rel="stylesheet" href="./assets/profile/styles.css" />
     <script src="./assets/profile/script.js" defer></script>
   </head>
   <body>
     <nav>
       <div>
-        <a href="/home">Home</a>
+        <a href="/">Home</a>
       </div>
     </nav>
-    <p>{{.Email}}</p>
-    <p>{{.Name}}</p>
-    <p>{{.Address}}</p>
-    <div>
-      <h2>Register</h2>
-      <form id="form">
-        <label for="email-input">Email</label>
-        <input type="email" name="email" id="email-input" />
-        <label for="name-input">Name</label>
-        <input type="text" name="name" id="name-input" />
-        <label for="address-input">Address</label>
-        <input type="text" name="address" id="address-input" />
-        <label for="password-input">Password</label>
-        <input type="password" name="password" id="password-input" />
-        <button type="submit">Submit</button>
-      </form>
-    </div>
+    <main>
+      <div>
+        <h2>Profile</h2>
+        <form id="form">
+          <label for="email-input">Email</label>
+          <input
+            type="email"
+            name="email"
+            id="email-input"
+            value="{{.Email}}"
+            required
+          />
+          <label for="name-input">Name</label>
+          <input
+            type="text"
+            name="name"
+            id="name-input"
+            value="{{.Name}}"
+            required
+          />
+          <label for="address-input">Address</label>
+          <input
+            type="text"
+            name="address"
+            id="address-input"
+            value="{{.Address}}"
+            required
+          />
+          <label for="password-input">Password</label>
+          <input
+            type="password"
+            name="password"
+            id="password-input"
+            value="{{.Password}}"
+            required
+          />
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+    </main>
   </body>
 </html>

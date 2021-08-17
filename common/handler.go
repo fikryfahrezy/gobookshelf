@@ -16,6 +16,7 @@ var routeMethods = map[string]string{
 	"POST":   "POST",
 	"PUT":    "PUT",
 	"DELETE": "DELETE",
+	"PATCH":  "PATCH",
 }
 
 type RouteChild struct {
@@ -141,6 +142,10 @@ func HandlerPUT(url string, fn http.HandlerFunc) {
 
 func HandlerDELETE(url string, fn http.HandlerFunc) {
 	registerHandler("DELETE", url, fn)
+}
+
+func HandlerPATCH(url string, fn http.HandlerFunc) {
+	registerHandler("PATCH", url, fn)
 }
 
 func getRoute(url, mtd string) func(http.ResponseWriter, *http.Request) {

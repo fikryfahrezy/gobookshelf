@@ -21,3 +21,8 @@ form {
 form > button {
   margin-top: 25px;
 }
+
+.address-input {
+  display: flex;
+  flex-direction: column;
+}

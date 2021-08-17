@@ -43,7 +43,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 func Registration(w http.ResponseWriter, r *http.Request) {
 	_, err := r.Cookie(users.AuthSessionKey)
 	if err == nil {
-		http.Redirect(w, r, "/home", http.StatusFound)
+		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 
@@ -53,7 +53,7 @@ func Registration(w http.ResponseWriter, r *http.Request) {
 func Login(w http.ResponseWriter, r *http.Request) {
 	_, err := r.Cookie(users.AuthSessionKey)
 	if err == nil {
-		http.Redirect(w, r, "/home", http.StatusFound)
+		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 
@@ -63,7 +63,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 func Profile(w http.ResponseWriter, r *http.Request) {
 	c, err := r.Cookie(users.AuthSessionKey)
 	if err != nil {
-		http.Redirect(w, r, "/home", http.StatusFound)
+		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 
@@ -71,7 +71,7 @@ func Profile(w http.ResponseWriter, r *http.Request) {
 	u, ok := users.GetUserById(cv)
 
 	if !ok {
-		http.Redirect(w, r, "/home", http.StatusFound)
+		http.Redirect(w, r, "/", http.StatusFound)
 	}
 
 	templates.ExecuteTemplate(w, "profile.html", u)

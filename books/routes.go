@@ -36,6 +36,8 @@ func Post(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAll(w http.ResponseWriter, r *http.Request) {
+	common.AllowCORS(&w)
+
 	q, err := common.ReqQuery(r.URL.String())
 	if err != nil {
 		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: make([]interface{}, 0)}
@@ -49,7 +51,6 @@ func GetAll(w http.ResponseWriter, r *http.Request) {
 	bs := BooksSerializer{b}
 	res := common.CommonResponse{Status: "success", Message: "", Data: bs.Response()}
 
-	common.AllowCORS(&w)
 	common.ResJSON(w, http.StatusOK, res.Response())
 }
 

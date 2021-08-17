@@ -82,13 +82,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 func Logout(w http.ResponseWriter, r *http.Request) {
 	c, err := r.Cookie(AuthSessionKey)
 	if err != nil {
-		http.Redirect(w, r, "/home", http.StatusFound)
+		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 
 	UserSessions.Delete(c.Value)
 	http.SetCookie(w, &http.Cookie{Name: AuthSessionKey, MaxAge: -1})
-	http.Redirect(w, r, "/home", http.StatusFound)
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func UpdateProfile(w http.ResponseWriter, r *http.Request) {

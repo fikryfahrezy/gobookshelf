@@ -6,3 +6,18 @@
   font-family: 'Roboto', sans-serif;
   box-sizing: border-box;
 }
+
+main {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+form > button {
+  margin-top: 25px;
+}

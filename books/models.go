@@ -1,13 +1,107 @@
 package books
 
 import (
+	"encoding/json"
+	"os"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/fikryfahrezy/gobookshelf/data"
 	"github.com/fikryfahrezy/gobookshelf/utils"
 )
+
+// Make variable exported so can be changed in testing
+var filename = "data/books.json"
+
+func writeFile(f string, b []byte) {
+	fo, err := os.Create(f)
+	if err != nil {
+		panic(err)
+	}
+
+	// close fo on exit and check for its returned error
+	defer func() {
+		if err := fo.Close(); err != nil {
+			panic(err)
+		}
+	}()
+
+	if _, err := fo.Write(b); err != nil {
+		panic(err)
+	}
+}
+
+// How to read/write from/to a file using Go
+// https://stackoverflow.com/questions/1821811/how-to-read-write-from-to-a-file-using-go
+func InitDB() {
+	// open input file
+	initdata := []byte("[]")
+
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		writeFile(filename, initdata)
+	}
+}
+
+func insert(v interface{}) {
+	fi, err := os.Open(filename)
+	if err != nil {
+		panic(err)
+	}
+
+	// close fi on exit and check for its returned error
+	defer func() {
+		if err := fi.Close(); err != nil {
+			panic(err)
+		}
+	}()
+
+	var d []interface{}
+	json.NewDecoder(fi).Decode(&d)
+
+	d = append(d, v)
+	b, err := json.Marshal(d)
+	if err != nil {
+		panic(err)
+	}
+
+	writeFile(filename, b)
+}
+
+func read(v interface{}) {
+	fi, err := os.Open(filename)
+	if err != nil {
+		panic(err)
+	}
+	// close fi on exit and check for its returned error
+	defer func() {
+		if err := fi.Close(); err != nil {
+			panic(err)
+		}
+	}()
+
+	json.NewDecoder(fi).Decode(&v)
+}
+
+func Update(v interface{}) {
+	fi, err := os.Open(filename)
+	if err != nil {
+		panic(err)
+	}
+
+	// close fi on exit and check for its returned error
+	defer func() {
+		if err := fi.Close(); err != nil {
+			panic(err)
+		}
+	}()
+
+	b, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+
+	writeFile(filename, b)
+}
 
 type bookModel struct {
 	Id         string `json:"id"`
@@ -30,7 +124,7 @@ func (b *bookModel) Save() {
 	b.InsertedAt = t
 	b.UpdatedAt = t
 
-	data.Insert(b)
+	insert(b)
 }
 
 func (b *bookModel) Update(nb bookModel) {
@@ -60,7 +154,7 @@ func (b *bookModel) Update(nb bookModel) {
 
 		bs[ci] = ob
 
-		data.Update(bs)
+		Update(bs)
 	}
 }
 
@@ -75,19 +169,19 @@ func (b *bookModel) Delete() {
 		}
 	}
 
-	data.Update(bs)
+	Update(bs)
 }
 
 func GetAllBooks() []bookModel {
 	var b []bookModel
-	data.Read(&b)
+	read(&b)
 
 	return b
 }
 
 func GetSelectedBooks(q GetBookQuery) []bookModel {
 	b := []bookModel{}
-	data.Read(&b)
+	read(&b)
 
 	var nb []bookModel
 	n, f, d := q.Name, q.Finished, q.Reading

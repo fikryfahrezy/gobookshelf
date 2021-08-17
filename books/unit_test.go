@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/fikryfahrezy/gobookshelf/common"
-	"github.com/fikryfahrezy/gobookshelf/data"
 )
 
 func createBook(id string) bookModel {
@@ -26,7 +25,7 @@ func createBook(id string) bookModel {
 		"time",
 	}
 
-	data.Insert(b)
+	insert(b)
 
 	return b
 }
@@ -34,8 +33,8 @@ func createBook(id string) bookModel {
 // Testing Your (HTTP) Handlers in Go
 // https://www.cloudbees.com/blog/testing-http-handlers-go
 func TestHandlers(t *testing.T) {
-	data.Filename = "../data/books.json"
-	data.InitDB()
+	filename = "../data/books.json"
+	InitDB()
 
 	cases := []struct {
 		testName              string
@@ -183,7 +182,7 @@ func TestHandlers(t *testing.T) {
 			"Fail, Method Not Exist on Route",
 			func() {},
 			"/books",
-			"PATCH",
+			"NOAVA",
 			``,
 			http.StatusMethodNotAllowed,
 		},
