@@ -3,7 +3,6 @@ package geocodings
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 
 	"github.com/fikryfahrezy/gobookshelf/common"
@@ -37,40 +36,25 @@ func GetCountries(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c, ce := make(chan []byte, 1), make(chan bool, 1)
-
-	go func(cb chan []byte, cr chan bool) {
-		resp, err := client.Do(req)
-		if err != nil {
-			cb <- []byte("")
-			cr <- false
-			return
-		}
-
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			cb <- []byte("")
-			cr <- false
-			return
-		}
-
-		defer resp.Body.Close()
-
-		cb <- body
-		cr <- true
-	}(c, ce)
-
-	rs, ok := <-c, <-ce
-
-	if !ok {
-		res := common.CommonResponse{Status: "fail", Message: "something wrong", Data: make([]interface{}, 0)}
+	resp, err := client.Do(req)
+	if err != nil {
+		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
 		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
 
 	var res interface{}
-	json.Unmarshal(rs, &res)
+	err = json.NewDecoder(resp.Body).Decode(&res)
+
+	if err != nil {
+		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+
+		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
+		return
+	}
+
+	defer resp.Body.Close()
 
 	common.ResJSON(w, http.StatusOK, res)
 }
@@ -99,7 +83,6 @@ func GetStreet(w http.ResponseWriter, r *http.Request) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://geocode.xyz/?geoit=json&region=%s&streetname=%s", rg, s), nil)
 	if err != nil {
 		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
-
 		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
@@ -112,7 +95,9 @@ func GetStreet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body, err := io.ReadAll(resp.Body)
+	var res interface{}
+	err = json.NewDecoder(resp.Body).Decode(&res)
+
 	if err != nil {
 		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
@@ -121,9 +106,6 @@ func GetStreet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer resp.Body.Close()
-
-	var res interface{}
-	json.Unmarshal(body, &res)
 
 	common.ResJSON(w, http.StatusOK, res)
 }

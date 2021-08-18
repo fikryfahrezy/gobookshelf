@@ -11,6 +11,8 @@ import (
 	"strings"
 )
 
+var OwnServerUrl = ""
+
 var routeMethods = map[string]string{
 	"GET":    "GET",
 	"POST":   "POST",
@@ -208,11 +210,14 @@ func MakeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func InitServer(p int) {
+	ps := fmt.Sprint(p)
+	OwnServerUrl = fmt.Sprintf("http://localhost:%s", ps)
+
 	for v := range Routes {
 		http.HandleFunc(v, MakeHandler)
 	}
 
-	log.Fatal(http.ListenAndServe(":"+fmt.Sprint(p), nil))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", ps), nil))
 }
 
 // How to Parse a JSON Request Body in Go (with Validation)

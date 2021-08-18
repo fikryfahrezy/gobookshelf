@@ -37,11 +37,9 @@ func Registration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	us := UserSessions.Create(ur.Id)
 	res := common.CommonResponse{Status: "success", Message: "", Data: ur.Id}
 
-	http.SetCookie(w, &http.Cookie{Name: AuthSessionKey, Value: us, HttpOnly: true, Secure: true, SameSite: 3})
-	common.ResJSON(w, http.StatusCreated, res)
+	common.ResJSON(w, http.StatusCreated, res.Response())
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -72,23 +70,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	us := UserSessions.Create(ur.Id)
 	res := common.CommonResponse{Status: "success", Message: "", Data: ur.Id}
 
-	http.SetCookie(w, &http.Cookie{Name: AuthSessionKey, Value: us, HttpOnly: true, Secure: true, SameSite: 3})
 	common.ResJSON(w, http.StatusOK, res)
-}
-
-func Logout(w http.ResponseWriter, r *http.Request) {
-	c, err := r.Cookie(AuthSessionKey)
-	if err != nil {
-		http.Redirect(w, r, "/", http.StatusFound)
-		return
-	}
-
-	UserSessions.Delete(c.Value)
-	http.SetCookie(w, &http.Cookie{Name: AuthSessionKey, MaxAge: -1})
-	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func UpdateProfile(w http.ResponseWriter, r *http.Request) {
@@ -110,20 +94,19 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c, ec := r.Cookie(AuthSessionKey)
+	c := r.Header.Get("authorization")
 
-	if ec != nil {
-		res := common.CommonResponse{Status: "fail", Message: ec.Error(), Data: ""}
+	if c == "" {
+		res := common.CommonResponse{Status: "fail", Message: http.StatusText(http.StatusUnauthorized), Data: ""}
 
 		common.ResJSON(w, http.StatusUnauthorized, res.Response())
 		return
 	}
 
-	uc := UserSessions.Get(c.Value)
 	nu := userModel{}
 	mapUser(&nu, u)
 
-	ur, ok := updateUser(uc, nu)
+	ur, ok := updateUser(c, nu)
 
 	if !ok {
 		res := common.CommonResponse{Status: "fail", Message: "", Data: ""}
@@ -133,5 +116,6 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res := common.CommonResponse{Status: "success", Message: "", Data: ur.Id}
-	common.ResJSON(w, http.StatusOK, res)
+
+	common.ResJSON(w, http.StatusOK, res.Response())
 }

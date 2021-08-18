@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login</title>
     <link rel="stylesheet" href="./assets/login/styles.css" />
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="./assets/login/script.js" defer></script>
   </head>
   <body>
@@ -25,6 +26,25 @@
           <input type="password" name="password" id="password-input" required />
           <button type="submit">Submit</button>
         </form>
+        <p>
+          <em> This Work and Server Get The Data, but Not Storing to "DB"</em>
+        </p>
+        <div
+          id="g_id_onload"
+          data-client_id="735831968563-5ivsphfm9kl0n961qtts4rl8amd04ilb.apps.googleusercontent.com"
+          data-login_uri="http://localhost:8080/oauth"
+          data-auto_prompt="false"
+          data-ux_mode="redirect"
+        ></div>
+        <div
+          class="g_id_signin"
+          data-type="standard"
+          data-size="large"
+          data-theme="outline"
+          data-text="sign_in_with"
+          data-shape="rectangular"
+          data-logo_alignment="left"
+        ></div>
       </div>
     </main>
   </body>

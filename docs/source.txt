@@ -106,6 +106,12 @@ https://stackoverflow.com/questions/36857167/how-to-correctly-use-sync-cond
 Goroutine IDs
 https://blog.sgmansfield.com/2015/12/goroutine-ids/
 
+Why you should avoid ioutil.ReadAll in Go
+https://daryl-ng.medium.com/why-you-should-avoid-ioutil-readall-in-go-e6be4de180f8
+
+Be careful with ioutil.ReadAll in Golang
+https://haisum.github.io/2017/09/11/golang-ioutil-readall/
+
 
 # Non-related to GO
 

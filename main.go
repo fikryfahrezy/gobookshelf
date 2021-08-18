@@ -16,9 +16,14 @@ func main() {
 	// Views
 	common.HandlerGET("/", pages.Home)
 	common.HandlerGET("/matrix", pages.Matrix)
-	common.HandlerGET("/register", pages.Registration)
+	common.HandlerGET("/register", pages.Register)
+	common.HandlerGET("/logout", pages.Logout)
 	common.HandlerGET("/login", pages.Login)
 	common.HandlerGET("/profile", pages.Profile)
+	common.HandlerPOST("/registration", pages.Registration)
+	common.HandlerPOST("/loginacc", pages.LoginAcc)
+	common.HandlerPATCH("/updateacc", pages.UpdateAcc)
+	common.HandlerPOST("/oauth", pages.Oauth)
 
 	// Apis
 	common.HandlerPOST("/books", books.Post)
@@ -26,10 +31,9 @@ func main() {
 	common.HandlerGET("/books/:id", books.GetOne)
 	common.HandlerPUT("/books/:id", books.Put)
 	common.HandlerDELETE("/books/:id", books.Delete)
-	common.HandlerPOST("/registration", users.Registration)
+	common.HandlerPOST("/userreg", users.Registration)
 	common.HandlerPOST("/userlogin", users.Login)
-	common.HandlerPATCH("/updateprofile", users.UpdateProfile)
-	common.HandlerGET("/logout", users.Logout)
+	common.HandlerPATCH("/updateuser", users.UpdateProfile)
 	common.HandlerGET("/countries", geocodings.GetCountries)
 	common.HandlerGET("/street", geocodings.GetStreet)
 

@@ -24,31 +24,50 @@
             name="email"
             id="email-input"
             value="{{.Email}}"
-            required
           />
           <label for="name-input">Name</label>
-          <input
-            type="text"
-            name="name"
-            id="name-input"
-            value="{{.Name}}"
-            required
-          />
-          <label for="address-input">Address</label>
-          <input
-            type="text"
-            name="address"
-            id="address-input"
-            value="{{.Address}}"
-            required
-          />
+          <input type="text" name="name" id="name-input" value="{{.Name}}" />
+          <div class="address-input">
+            <label for="region-input">Region</label>
+            <input
+              type="text"
+              name="region"
+              id="region-input"
+              value="{{.Region}}"
+            />
+            <div>
+              <label
+                for="region-select"
+                style="visibility: hidden"
+                aria-label="Region Selection"
+              ></label>
+              <select id="region-select"></select>
+            </div>
+          </div>
+          <div class="address-input">
+            <label for="street-input">Street</label>
+            <input
+              type="text"
+              name="street"
+              id="street-input"
+              value="{{.Street}}"
+              disabled
+            />
+            <div>
+              <label
+                for="street-select"
+                style="visibility: hidden"
+                aria-label="Street Selection"
+              ></label>
+              <select id="street-select" disabled></select>
+            </div>
+          </div>
           <label for="password-input">Password</label>
           <input
             type="password"
             name="password"
             id="password-input"
             value="{{.Password}}"
-            required
           />
           <button type="submit">Submit</button>
         </form>

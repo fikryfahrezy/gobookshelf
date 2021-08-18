@@ -6,7 +6,8 @@ type userReq struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 	Name     string `json:"name"`
-	Address  string `json:"address"`
+	Region   string `json:"region"`
+	Street   string `json:"street"`
 }
 
 func (ur *userReq) RegValidate() (string, bool) {
@@ -24,8 +25,12 @@ func (ur *userReq) RegValidate() (string, bool) {
 		return "name required", false
 	}
 
-	if ur.Address == "" {
-		return "address required", false
+	if ur.Region == "" {
+		return "region required", false
+	}
+
+	if ur.Street == "" {
+		return "street required", false
 	}
 
 	return "", true

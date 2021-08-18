@@ -17,7 +17,7 @@ func Matrix(w http.ResponseWriter, r *http.Request) {
 
 func Home(w http.ResponseWriter, r *http.Request) {
 	isLogin := false
-	_, err := r.Cookie(users.AuthSessionKey)
+	_, err := r.Cookie(authSessionKey)
 	if err == nil {
 		isLogin = true
 	}
@@ -40,8 +40,8 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "home.html", d)
 }
 
-func Registration(w http.ResponseWriter, r *http.Request) {
-	_, err := r.Cookie(users.AuthSessionKey)
+func Register(w http.ResponseWriter, r *http.Request) {
+	_, err := r.Cookie(authSessionKey)
 	if err == nil {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
@@ -50,8 +50,20 @@ func Registration(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "register.html", nil)
 }
 
+func Logout(w http.ResponseWriter, r *http.Request) {
+	c, err := r.Cookie(authSessionKey)
+	if err != nil {
+		http.Redirect(w, r, "/", http.StatusInternalServerError)
+		return
+	}
+
+	userSessions.Delete(c.Value)
+	http.SetCookie(w, &http.Cookie{Name: authSessionKey, MaxAge: -1})
+	http.Redirect(w, r, "/", http.StatusFound)
+}
+
 func Login(w http.ResponseWriter, r *http.Request) {
-	_, err := r.Cookie(users.AuthSessionKey)
+	_, err := r.Cookie(authSessionKey)
 	if err == nil {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
@@ -61,13 +73,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func Profile(w http.ResponseWriter, r *http.Request) {
-	c, err := r.Cookie(users.AuthSessionKey)
+	c, err := r.Cookie(authSessionKey)
 	if err != nil {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 
-	cv := users.UserSessions.Get(c.Value)
+	cv := userSessions.Get(c.Value)
 	u, ok := users.GetUserById(cv)
 
 	if !ok {

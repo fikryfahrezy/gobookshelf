@@ -23,18 +23,18 @@ func TestHandlers(t *testing.T) {
 		{
 			"Registration Success",
 			func(r *http.Request) {},
-			"/registration",
+			"/userreg",
 			"POST",
-			`{"email":"email@email.com","password":"password","name":"name","address":"address"}`,
+			`{"email":"email@email.com","password":"password","name":"name","region":"region","street":"street"}`,
 			http.StatusCreated,
 			1,
 		},
 		{
 			"Registration Fail, Not Valid Email",
 			func(r *http.Request) {},
-			"/registration",
+			"/userreg",
 			"POST",
-			`{"email":"not-valid-email","password":"password","name":"name","address":"address"}`,
+			`{"email":"not-valid-email","password":"password","name":"name","region":"region","street":"street"}`,
 			http.StatusUnprocessableEntity,
 			1,
 		},
@@ -45,7 +45,8 @@ func TestHandlers(t *testing.T) {
 					Email:    "email@email2.com",
 					Password: "password",
 					Name:     "Name",
-					Address:  "Adress",
+					Region:   "Region",
+					Street:   "Street",
 				}
 				createUser(u)
 			},
@@ -62,7 +63,8 @@ func TestHandlers(t *testing.T) {
 					Email:    "email@email3.com",
 					Password: "password",
 					Name:     "Name",
-					Address:  "Adress",
+					Region:   "Region",
+					Street:   "Street",
 				}
 				createUser(u)
 			},
@@ -98,13 +100,12 @@ func TestHandlers(t *testing.T) {
 					Email:    "email@email4.com",
 					Password: "password",
 					Name:     "Name",
-					Address:  "Adress",
+					Region:   "Region",
+					Street:   "Street",
 				}
-				users.Insert(u)
 
-				sKey := "1"
-				UserSessions.session[sKey] = u.Id
-				r.AddCookie(&http.Cookie{Name: AuthSessionKey, Value: sKey})
+				users.Insert(u)
+				r.Header.Add("authorization", "1")
 			},
 			"/updateprofile",
 			"PATCH",
@@ -123,7 +124,7 @@ func TestHandlers(t *testing.T) {
 		},
 	}
 
-	common.HandlerPOST("/registration", Registration)
+	common.HandlerPOST("/userreg", Registration)
 	common.HandlerPOST("/userlogin", Login)
 	common.HandlerPATCH("/updateprofile", UpdateProfile)
 
@@ -142,7 +143,6 @@ func TestHandlers(t *testing.T) {
 		common.MakeHandler(rr, req)
 
 		if rr.Result().StatusCode != c.expectedCode {
-			t.Log(rr.Result().StatusCode)
 			t.FailNow()
 		}
 

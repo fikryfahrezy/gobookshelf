@@ -12,7 +12,8 @@ type userModel struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 	Name     string `json:"name"`
-	Address  string `json:"address"`
+	Region   string `json:"region"`
+	Street   string `json:"street"`
 }
 
 func (um *userModel) Save() (userModel, bool) {
@@ -35,8 +36,12 @@ func (um *userModel) Update(nu userModel) (userModel, bool) {
 		um.Name = nu.Name
 	}
 
-	if nu.Address != "" {
-		um.Address = nu.Address
+	if nu.Region != "" {
+		um.Region = nu.Region
+	}
+
+	if nu.Street != "" {
+		um.Street = nu.Street
 	}
 
 	nu, ok := users.Update(*um)
@@ -112,37 +117,3 @@ func (udb *userDB) Update(u userModel) (userModel, bool) {
 }
 
 var users = userDB{users: make(map[time.Time]userModel)}
-
-type userSession struct {
-	session map[string]string
-	lock    sync.RWMutex
-}
-
-func (us *userSession) Create(v string) string {
-	us.lock.Lock()
-	defer us.lock.Unlock()
-
-	k := utils.RandString(15)
-
-	us.session[k] = v
-
-	return k
-}
-
-func (us *userSession) Get(k string) string {
-	us.lock.RLock()
-	defer us.lock.RUnlock()
-
-	return us.session[k]
-}
-
-func (us *userSession) Delete(k string) {
-	us.lock.Lock()
-	defer us.lock.Unlock()
-
-	delete(us.session, k)
-}
-
-var UserSessions = userSession{session: make(map[string]string)}
-
-const AuthSessionKey = "auth"

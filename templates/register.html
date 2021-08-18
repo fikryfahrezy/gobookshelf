@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Register</title>
     <link rel="stylesheet" href="./assets/register/styles.css" />
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="./assets/register/script.js" defer></script>
   </head>
   <body>
@@ -25,7 +26,7 @@
           <input type="text" name="name" id="name-input" required />
           <div class="address-input">
             <label for="region-input">Region</label>
-            <input type="text" id="region-input" required />
+            <input type="text" name="region" id="region-input" required />
             <div>
               <label
                 for="region-select"
@@ -36,10 +37,10 @@
             </div>
           </div>
           <div class="address-input">
-            <label for="street-input">Address</label>
+            <label for="street-input">Street</label>
             <input
               type="text"
-              name="address"
+              name="street"
               id="street-input"
               required
               disabled
@@ -57,6 +58,25 @@
           <input type="password" name="password" id="password-input" required />
           <button type="submit">Submit</button>
         </form>
+        <p>
+          <em> This Work and Server Get The Data, but Not Storing to "DB"</em>
+        </p>
+        <div
+          id="g_id_onload"
+          data-client_id="735831968563-5ivsphfm9kl0n961qtts4rl8amd04ilb.apps.googleusercontent.com"
+          data-login_uri="http://localhost:8080/oauth"
+          data-auto_prompt="false"
+          data-ux_mode="redirect"
+        ></div>
+        <div
+          class="g_id_signin"
+          data-type="standard"
+          data-size="large"
+          data-theme="outline"
+          data-text="sign_in_with"
+          data-shape="rectangular"
+          data-logo_alignment="left"
+        ></div>
       </div>
     </main>
   </body>

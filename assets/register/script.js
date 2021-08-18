@@ -7,7 +7,21 @@ const regionSelect = document.getElementById('region-select');
 const streetInput = document.getElementById('street-input');
 const streetSelect = document.getElementById('street-select');
 
-let selectedRegion = '';
+let selectedRegion = regionInput.value;
+
+/**
+ *
+ * @param {boolean} isSelected
+ */
+const addressVisibleToggle = function addressVisible(isSelected) {
+  if (isSelected) {
+    streetInput.disabled = false;
+    streetSelect.disabled = false;
+  } else {
+    streetInput.disabled = true;
+    streetSelect.disabled = true;
+  }
+};
 
 /**
  *
@@ -16,6 +30,7 @@ let selectedRegion = '';
 const appendCountry = function appendCountry({ alpha2Code, name }) {
   const option = document.createElement('option');
 
+  option.classList.add('country');
   option.value = alpha2Code;
   option.textContent = name;
 
@@ -23,13 +38,7 @@ const appendCountry = function appendCountry({ alpha2Code, name }) {
     selectedRegion = e.target.value;
     regionInput.value = e.target.textContent;
 
-    if (selectedRegion !== '') {
-      streetInput.disabled = false;
-      streetSelect.disabled = false;
-    } else {
-      streetInput.disabled = true;
-      streetSelect.disabled = true;
-    }
+    addressVisibleToggle(selectedRegion !== '');
   });
 
   regionSelect.appendChild(option);
@@ -49,6 +58,14 @@ const appendCountries = function setCountries(countries) {
   });
 };
 
+const setDefaultCountry = function setDefalutCountry() {
+  const option = document.querySelector('.address-input  .country');
+
+  if (option) {
+    option.click();
+  }
+};
+
 /**
  *
  * @param {string} street
@@ -56,6 +73,7 @@ const appendCountries = function setCountries(countries) {
 const appendStreet = function appendCountry(street) {
   const option = document.createElement('option');
 
+  option.classList.add('street');
   option.value = street;
   option.textContent = street;
 
@@ -102,7 +120,8 @@ const fetchCountries = async function fetchCountries(name = '') {
 
 /**
  *
- * @param {string[]} street
+ * @param {string} street
+ * @returns {Promise<string[]>}
  */
 const fetchStreet = async function fetchStreet(street = 'jakarta') {
   return fetch(`/street?region=${selectedRegion}&street=${street}`, {
@@ -125,12 +144,15 @@ const fetchStreet = async function fetchStreet(street = 'jakarta') {
  *
  * @param {string} name
  */
-const getCountries = function getCountries(name) {
-  fetchCountries(name)
+const getCountries = async function getCountries(name) {
+  return fetchCountries(name)
     .then((res) => {
       if (!res) throw new Error('not-found');
 
       appendCountries(res);
+    })
+    .then(() => {
+      setDefaultCountry();
     })
     .catch((err) => {
       console.log(err);
@@ -141,8 +163,8 @@ const getCountries = function getCountries(name) {
  *
  * @param {string} street
  */
-const getStreet = function getStreet(street) {
-  fetchStreet(street)
+const getStreet = async function getStreet(street) {
+  return fetchStreet(street)
     .then((res) => {
       if (!res) throw new Error('not-found');
 
@@ -219,3 +241,10 @@ streetInput.addEventListener(
     getStreet(e.target.value);
   }, 300)
 );
+
+const init = async function init() {
+  addressVisibleToggle(selectedRegion !== '');
+  await getCountries(selectedRegion);
+};
+
+init();
