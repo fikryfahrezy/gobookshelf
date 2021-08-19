@@ -1,6 +1,6 @@
 package books
 
-func mapBook(ob *bookModel, nb bookReqValidator) {
+func mapBook(ob *bookModel, nb bookReq) {
 	ob.Name = nb.Name
 	ob.Year = nb.Year
 	ob.Author = nb.Author

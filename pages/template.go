@@ -47,7 +47,9 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	templates.ExecuteTemplate(w, "register.html", nil)
+	a := authTmplDt{OauthURL: common.OwnServerUrl}
+
+	templates.ExecuteTemplate(w, "register.html", a)
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {
@@ -69,7 +71,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	templates.ExecuteTemplate(w, "login.html", nil)
+	a := authTmplDt{OauthURL: common.OwnServerUrl}
+
+	templates.ExecuteTemplate(w, "login.html", a)
 }
 
 func Profile(w http.ResponseWriter, r *http.Request) {
@@ -87,4 +91,38 @@ func Profile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	templates.ExecuteTemplate(w, "profile.html", u)
+}
+
+func ForgotPass(w http.ResponseWriter, r *http.Request) {
+	_, err := r.Cookie(authSessionKey)
+	if err == nil {
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
+
+	templates.ExecuteTemplate(w, "forgotpass.html", nil)
+}
+
+func ResetPass(w http.ResponseWriter, r *http.Request) {
+	c, err := common.ReqQuery(r.URL.String())
+	if err != nil {
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
+
+	cd := c("code")
+
+	if cd == "" {
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
+
+	fpm, ok := users.ForgotPasses.ReadByCode(cd)
+
+	if !ok || fpm.IsClaimed {
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
+
+	templates.ExecuteTemplate(w, "resetpass.html", nil)
 }

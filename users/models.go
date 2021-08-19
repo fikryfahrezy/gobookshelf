@@ -117,3 +117,72 @@ func (udb *userDB) Update(u userModel) (userModel, bool) {
 }
 
 var users = userDB{users: make(map[time.Time]userModel)}
+
+type forgotPassModel struct {
+	Id        string
+	Email     string
+	Code      string
+	IsClaimed bool
+}
+
+func (fpM *forgotPassModel) Save() {
+	fpM.Id = utils.RandString(4)
+
+	ForgotPasses.Insert(*fpM)
+}
+
+func (fpM *forgotPassModel) Update(nfpM forgotPassModel) (forgotPassModel, bool) {
+	if nfpM.Code != "" {
+		fpM.Code = nfpM.Code
+	}
+
+	if nfpM.Email != "" {
+		fpM.Email = nfpM.Email
+	}
+
+	if nfpM.IsClaimed != fpM.IsClaimed {
+		fpM.IsClaimed = nfpM.IsClaimed
+	}
+
+	nfpM, ok := ForgotPasses.Update(*fpM)
+
+	return nfpM, ok
+}
+
+type forgotPassDB struct {
+	users map[time.Time]forgotPassModel
+	lock  sync.RWMutex
+}
+
+func (fpdb *forgotPassDB) Insert(fp forgotPassModel) {
+	fpdb.lock.Lock()
+	defer fpdb.lock.Unlock()
+
+	fpdb.users[time.Now()] = fp
+}
+
+func (fpdb *forgotPassDB) ReadByCode(k string) (forgotPassModel, bool) {
+	for _, v := range fpdb.users {
+		if v.Code == k && !v.IsClaimed {
+			return v, true
+		}
+	}
+
+	return forgotPassModel{}, false
+}
+
+func (fpdb *forgotPassDB) Update(fp forgotPassModel) (forgotPassModel, bool) {
+	fpdb.lock.Lock()
+	defer fpdb.lock.Unlock()
+
+	for i, v := range fpdb.users {
+		if v.Id == fp.Id {
+			fpdb.users[i] = fp
+			return fpdb.users[i], true
+		}
+	}
+
+	return forgotPassModel{}, false
+}
+
+var ForgotPasses = forgotPassDB{users: make(map[time.Time]forgotPassModel)}

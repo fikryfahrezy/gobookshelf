@@ -114,6 +114,7 @@ type bookModel struct {
 	ReadPage   int    `json:"readPage"`
 	Finished   bool   `json:"finished"`
 	Reading    bool   `json:"reading"`
+	IsDeleted  bool   `json:"-"`
 	InsertedAt string `json:"insertedAt"`
 	UpdatedAt  string `json:"updatedAt"`
 }
@@ -163,9 +164,7 @@ func (b *bookModel) Delete() {
 
 	for i, v := range bs {
 		if v.Id == b.Id {
-			l := len(bs) - 1
-			bs[i] = bs[l]
-			bs = bs[:l]
+			bs[i].IsDeleted = true
 		}
 	}
 

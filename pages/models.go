@@ -12,6 +12,10 @@ type regResp struct {
 	Data    string `json:"data"`
 }
 
+type authTmplDt struct {
+	OauthURL string
+}
+
 type userSession struct {
 	session map[string]string
 	lock    sync.RWMutex

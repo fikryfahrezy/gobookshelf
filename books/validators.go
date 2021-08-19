@@ -1,6 +1,6 @@
 package books
 
-type bookReqValidator struct {
+type bookReq struct {
 	Name      string `json:"name"`
 	Year      int    `json:"year"`
 	Author    string `json:"author"`
@@ -11,7 +11,7 @@ type bookReqValidator struct {
 	Reading   bool   `json:"reading"`
 }
 
-func (b *bookReqValidator) Validate() (string, bool) {
+func (b *bookReq) Validate() (string, bool) {
 	if b.Name == "" {
 		return "Name cannot be empty", false
 	}

@@ -20,6 +20,10 @@ func main() {
 	common.HandlerGET("/logout", pages.Logout)
 	common.HandlerGET("/login", pages.Login)
 	common.HandlerGET("/profile", pages.Profile)
+	common.HandlerGET("/forgotpass", pages.ForgotPass)
+	common.HandlerGET("/resetpass", pages.ResetPass)
+
+	// Template Proxy
 	common.HandlerPOST("/registration", pages.Registration)
 	common.HandlerPOST("/loginacc", pages.LoginAcc)
 	common.HandlerPATCH("/updateacc", pages.UpdateAcc)
@@ -34,6 +38,8 @@ func main() {
 	common.HandlerPOST("/userreg", users.Registration)
 	common.HandlerPOST("/userlogin", users.Login)
 	common.HandlerPATCH("/updateuser", users.UpdateProfile)
+	common.HandlerPOST("/forgotpassword", users.ForgotPassword)
+	common.HandlerPATCH("/updatepassword", users.UpdatePassword)
 	common.HandlerGET("/countries", geocodings.GetCountries)
 	common.HandlerGET("/street", geocodings.GetStreet)
 

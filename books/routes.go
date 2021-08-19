@@ -7,7 +7,7 @@ import (
 )
 
 func Post(w http.ResponseWriter, r *http.Request) {
-	var b bookReqValidator
+	var b bookReq
 	err := common.DecodeJSONBody(w, r, &b)
 	if err != nil {
 		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
@@ -15,7 +15,6 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		common.ResJSON(w, err.Status, res.Response())
 		return
 	}
-
 	msg, ok := b.Validate()
 
 	if !ok {
@@ -81,7 +80,7 @@ func GetOne(w http.ResponseWriter, r *http.Request) {
 }
 
 func Put(w http.ResponseWriter, r *http.Request) {
-	var b bookReqValidator
+	var b bookReq
 	err := common.DecodeJSONBody(w, r, &b)
 	if err != nil {
 		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}

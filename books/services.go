@@ -7,16 +7,26 @@ func saveBook(b bookModel) bookModel {
 }
 
 func GetBooks(q GetBookQuery) []bookModel {
-	b := GetSelectedBooks(q)
+	bs := GetSelectedBooks(q)
+	n := 0
 
-	return b
+	for _, v := range bs {
+		if !v.IsDeleted {
+			bs[n] = v
+			n++
+		}
+	}
+
+	bs = bs[:n]
+
+	return bs
 }
 
 func getBook(id string) (bookModel, bool) {
 	b := GetAllBooks()
 
 	for _, v := range b {
-		if v.Id == id {
+		if v.Id == id && !v.IsDeleted {
 			return v, true
 		}
 	}

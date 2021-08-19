@@ -44,12 +44,12 @@ func (ur *userReq) UpValidate() (string, bool) {
 	return "", true
 }
 
-type loginReqValidator struct {
+type loginReq struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-func (ur *loginReqValidator) Validate() (string, bool) {
+func (ur *loginReq) Validate() (string, bool) {
 	if ur.Email == "" {
 		return "email required", false
 	} else if _, err := mail.ParseAddress(ur.Email); err != nil {
@@ -58,6 +58,37 @@ func (ur *loginReqValidator) Validate() (string, bool) {
 
 	if ur.Password == "" {
 		return "password required", false
+	}
+
+	return "", true
+}
+
+type forgotPassReq struct {
+	Email string `json:"email"`
+}
+
+func (ur *forgotPassReq) Validate() (string, bool) {
+	if ur.Email == "" {
+		return "email required", false
+	} else if _, err := mail.ParseAddress(ur.Email); err != nil {
+		return "input valid email", false
+	}
+
+	return "", true
+}
+
+type resetPassReq struct {
+	Code    string `json:"code"`
+	Pasword string `json:"password"`
+}
+
+func (ur *resetPassReq) Validate() (string, bool) {
+	if ur.Pasword == "" {
+		return "password required", false
+	}
+
+	if ur.Code == "" {
+		return "code required", false
 	}
 
 	return "", true

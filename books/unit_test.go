@@ -21,6 +21,7 @@ func createBook(id string) bookModel {
 		1,
 		false,
 		false,
+		false,
 		"time",
 		"time",
 	}
