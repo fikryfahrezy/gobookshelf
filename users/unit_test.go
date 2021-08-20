@@ -18,7 +18,7 @@ func TestHandlers(t *testing.T) {
 		init                  func(*http.Request)
 		url, method, bodydata string
 		expectedCode          int
-		exptedResult          int
+		expectedResult        int
 	}{
 		{
 			"Registration Success",
@@ -146,7 +146,7 @@ func TestHandlers(t *testing.T) {
 			t.FailNow()
 		}
 
-		if len(users.users) != c.exptedResult {
+		if len(users.users) != c.expectedResult {
 			t.FailNow()
 		}
 	}

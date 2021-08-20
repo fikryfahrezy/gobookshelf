@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galery</title>
+    <link rel="stylesheet" href="./assets/gallery/styles.css" />
+    <script src="./assets/gallery/script.js" defer></script>
+  </head>
+  <body>
+    <nav>
+      <div>
+        <a href="/">Home</a>
+        {{if .IsLogin}}
+        <a href="/profile">Profile</a>
+        <a href="/logout">Logout</a>
+        {{else}}
+        <a href="/login">Login</a>
+        <a href="/register">Register</a>
+        {{end}}
+      </div>
+    </nav>
+    <div class="container">
+      <header>
+        <h1>GoBookshelf Gallery</h1>
+      </header>
+      <main>
+        <div>
+          <div class="grid-header">
+            {{if .IsLogin}}
+            <button id="dialog-button" class="dialog-button">Add</button>
+            {{end}}
+          </div>
+          <div class="grid">
+            {{range .Images}}
+            <article>
+              <h3>{{.Name}}</h3>
+              <img src="./assets/images/{{.Name}}" alt="Gallery Image" />
+            </article>
+            {{else}}
+            <div>
+              <h3>No Image Data Available :(</h3>
+            </div>
+            {{end}}
+          </div>
+        </div>
+      </main>
+      <footer>
+        <p>Made with -=GO</p>
+      </footer>
+    </div>
+    <div id="dialog" class="dialog none">
+      <div>
+        <h2>Gallery Form</h2>
+        <form id="form" class="form">
+          <label for="image-input">Image</label>
+          <input
+            id="image-input"
+            type="file"
+            accept="image/*"
+            name="image"
+            required
+          />
+          <div>
+            <button id="cancel-dialog" type="button">Cancel</button>
+            <button id="submit-btn" type="submit">Post</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

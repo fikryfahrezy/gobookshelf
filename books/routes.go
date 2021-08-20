@@ -47,7 +47,7 @@ func GetAll(w http.ResponseWriter, r *http.Request) {
 
 	bq := GetBookQuery{q("name"), q("reading"), q("finished")}
 	b := GetBooks(bq)
-	bs := BooksSerializer{b}
+	bs := booksSerializer{b}
 	res := common.CommonResponse{Status: "success", Message: "", Data: bs.Response()}
 
 	common.ResJSON(w, http.StatusOK, res.Response())
@@ -73,7 +73,7 @@ func GetOne(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bs := BookSerializer{b}
+	bs := bookSerializer{b}
 	res := common.CommonResponse{Status: "success", Message: "", Data: bs.Response()}
 
 	common.ResJSON(w, http.StatusOK, res.Response())
@@ -120,7 +120,7 @@ func Put(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bs := BookSerializer{nb}
+	bs := bookSerializer{nb}
 	res := common.CommonResponse{Status: "success", Message: "Book successfully updated", Data: bs.Response()}
 
 	common.ResJSON(w, http.StatusOK, res.Response())
@@ -146,7 +146,7 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bs := BookSerializer{ob}
+	bs := bookSerializer{ob}
 	res := common.CommonResponse{Status: "success", Message: "Book successfully deleted", Data: bs.Response()}
 
 	common.ResJSON(w, http.StatusOK, res.Response())

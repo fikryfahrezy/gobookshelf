@@ -6,6 +6,7 @@ import (
 
 	"github.com/fikryfahrezy/gobookshelf/books"
 	"github.com/fikryfahrezy/gobookshelf/common"
+	"github.com/fikryfahrezy/gobookshelf/galleries"
 	"github.com/fikryfahrezy/gobookshelf/users"
 )
 
@@ -125,4 +126,23 @@ func ResetPass(w http.ResponseWriter, r *http.Request) {
 	}
 
 	templates.ExecuteTemplate(w, "resetpass.html", nil)
+}
+
+func Gallery(w http.ResponseWriter, r *http.Request) {
+	isLogin := false
+	_, err := r.Cookie(authSessionKey)
+	if err == nil {
+		isLogin = true
+	}
+
+	im := galleries.GetImages()
+	d := struct {
+		IsLogin bool
+		Images  interface{}
+	}{
+		isLogin,
+		im,
+	}
+
+	templates.ExecuteTemplate(w, "gallery.html", d)
 }

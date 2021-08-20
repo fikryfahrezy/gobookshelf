@@ -1,5 +1,5 @@
 /*
-The books module containing the book CRUD operation.
+The galleries module containing operation for upload image.
 
 models.go: definition of based data model
 
@@ -12,7 +12,5 @@ services.go: core logic
 unit_test.go: for testing
 
 utils.go: for utilities logic or code support
-
-validators.go: request validations
 */
-package books
+package galleries

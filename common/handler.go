@@ -223,6 +223,8 @@ func InitServer(p int) {
 // How to Parse a JSON Request Body in Go (with Validation)
 // https://www.alexedwards.net/blog/how-to-properly-parse-a-json-request-body
 func DecodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) *MalformedRequest {
+	defer r.Body.Close()
+
 	// If the Content-Type header is present, check that it has the value
 	// application/json. Note that we are using the gddo/httputil/header
 	// package to parse and extract the value here, so the check works

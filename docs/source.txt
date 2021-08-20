@@ -112,6 +112,9 @@ https://daryl-ng.medium.com/why-you-should-avoid-ioutil-readall-in-go-e6be4de180
 Be careful with ioutil.ReadAll in Golang
 https://haisum.github.io/2017/09/11/golang-ioutil-readall/
 
+REF: POST data using the Content-Type multipart/form-data
+https://stackoverflow.com/questions/20205796/post-data-using-the-content-type-multipart-form-data
+
 
 # Non-related to GO
 

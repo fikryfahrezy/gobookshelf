@@ -114,7 +114,7 @@ type bookModel struct {
 	ReadPage   int    `json:"readPage"`
 	Finished   bool   `json:"finished"`
 	Reading    bool   `json:"reading"`
-	IsDeleted  bool   `json:"-"`
+	IsDeleted  bool   `json:"isDeleted"`
 	InsertedAt string `json:"insertedAt"`
 	UpdatedAt  string `json:"updatedAt"`
 }

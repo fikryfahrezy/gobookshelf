@@ -14,7 +14,7 @@ type book struct {
 	Publisher string `json:"publisher"`
 }
 
-type BooksSerializer struct {
+type booksSerializer struct {
 	Books []bookModel
 }
 
@@ -22,7 +22,7 @@ type booksResponse struct {
 	Books []book `json:"books"`
 }
 
-func (s *BooksSerializer) Response() booksResponse {
+func (s *booksSerializer) Response() booksResponse {
 	b := booksResponse{
 		Books: make([]book, len(s.Books)),
 	}
@@ -34,10 +34,10 @@ func (s *BooksSerializer) Response() booksResponse {
 	return b
 }
 
-type BookSerializer struct {
+type bookSerializer struct {
 	Book bookModel `json:"book"`
 }
 
-func (b *BookSerializer) Response() BookSerializer {
+func (b *bookSerializer) Response() bookSerializer {
 	return *b
 }

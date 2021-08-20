@@ -4,4 +4,7 @@ __debug_bin
 data/*
 !data/.gitkeep
 
+assets/images/*
+!assets/images/test-img.jpg
+
 *.exe

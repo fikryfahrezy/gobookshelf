@@ -5,6 +5,7 @@ import (
 
 	"github.com/fikryfahrezy/gobookshelf/books"
 	"github.com/fikryfahrezy/gobookshelf/common"
+	"github.com/fikryfahrezy/gobookshelf/galleries"
 	"github.com/fikryfahrezy/gobookshelf/geocodings"
 	"github.com/fikryfahrezy/gobookshelf/pages"
 	"github.com/fikryfahrezy/gobookshelf/users"
@@ -22,6 +23,7 @@ func main() {
 	common.HandlerGET("/profile", pages.Profile)
 	common.HandlerGET("/forgotpass", pages.ForgotPass)
 	common.HandlerGET("/resetpass", pages.ResetPass)
+	common.HandlerGET("/gallery", pages.Gallery)
 
 	// Template Proxy
 	common.HandlerPOST("/registration", pages.Registration)
@@ -42,6 +44,8 @@ func main() {
 	common.HandlerPATCH("/updatepassword", users.UpdatePassword)
 	common.HandlerGET("/countries", geocodings.GetCountries)
 	common.HandlerGET("/street", geocodings.GetStreet)
+	common.HandlerPOST("/galleries", galleries.Post)
+	common.HandlerGET("/galleries", galleries.Get)
 
 	// Public path
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))

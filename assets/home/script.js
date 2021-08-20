@@ -14,6 +14,10 @@ const toogleDialog = function toogleDialog() {
   dialog.classList.toggle('none');
 };
 
+/**
+ *
+ * @param {string} id
+ */
 const setFormField = function setFormField(id) {
   const name = document.getElementById(`name-${id}`).innerText;
   document.getElementById('form-name').value = name;
@@ -53,6 +57,10 @@ const setFormButtonName = function setFormButtonName() {
   }
 };
 
+/**
+ *
+ * @param {string} id
+ */
 const deleteBook = function deleteBook(id) {
   fetch(`/books/${id}`, {
     method: 'DELETE',
@@ -66,6 +74,10 @@ const deleteBook = function deleteBook(id) {
     });
 };
 
+/**
+ *
+ * @param {string} id
+ */
 const updateBook = function updateBook(id) {
   toogleDialog();
 

@@ -8,12 +8,12 @@ import (
 )
 
 type userModel struct {
-	Id       string `json:"id"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Name     string `json:"name"`
-	Region   string `json:"region"`
-	Street   string `json:"street"`
+	Id       string
+	Email    string
+	Password string
+	Name     string
+	Region   string
+	Street   string
 }
 
 func (um *userModel) Save() (userModel, bool) {
