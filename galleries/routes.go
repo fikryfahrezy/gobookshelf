@@ -25,10 +25,10 @@ func Post(w http.ResponseWriter, r *http.Request) {
 
 	defer f.Close()
 
-	msg, ok := createImage(f, *fh)
+	err = createImage(f, *fh)
 
-	if !ok {
-		res := common.CommonResponse{Status: "fail", Message: msg, Data: ""}
+	if err != nil {
+		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: ""}
 
 		common.ResJSON(w, http.StatusInternalServerError, res.Response())
 		return

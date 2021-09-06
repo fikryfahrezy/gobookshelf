@@ -1,59 +1,59 @@
 package users
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/fikryfahrezy/gobookshelf/common"
 	"github.com/fikryfahrezy/gobookshelf/utils"
 )
 
-func createUser(nu userModel) (userModel, bool) {
-	cu, ok := nu.Save()
-
-	if !ok {
-		return userModel{}, false
+func createUser(nu userModel) (userModel, error) {
+	cu, err := nu.Save()
+	if err != nil {
+		return userModel{}, err
 	}
 
-	return cu, true
+	return cu, nil
 }
 
-func getUser(e, p string) (userModel, bool) {
-	us, ok := users.ReadByEmail(e)
-
-	if !ok || us.Password != p {
-		return userModel{}, false
+func getUser(e, p string) (userModel, error) {
+	us, err := users.ReadByEmail(e)
+	if err != nil {
+		return userModel{}, err
 	}
 
-	return us, true
-}
-
-func GetUserById(k string) (userModel, bool) {
-	us, ok := users.ReadById(k)
-
-	if !ok {
-		return userModel{}, false
+	if us.Password != p {
+		return userModel{}, errors.New("wrong credential")
 	}
 
-	return us, true
+	return us, nil
 }
 
-func updateUser(k string, u userModel) (userModel, bool) {
-	c, ok := GetUserById(k)
-
-	if !ok {
-		return userModel{}, false
+func GetUserById(k string) (userModel, error) {
+	us, err := users.ReadById(k)
+	if err != nil {
+		return userModel{}, err
 	}
 
-	c, ok = c.Update(u)
-
-	return c, ok
+	return us, nil
 }
 
-func createForgotPass(e string) (string, bool) {
-	_, ok := users.ReadByEmail(e)
+func updateUser(k string, u userModel) (userModel, error) {
+	c, err := GetUserById(k)
+	if err != nil {
+		return userModel{}, err
+	}
 
-	if !ok {
-		return "", false
+	c, err = c.Update(u)
+
+	return c, err
+}
+
+func createForgotPass(e string) error {
+	_, err := users.ReadByEmail(e)
+	if err != nil {
+		return err
 	}
 
 	from := "email@email.com"
@@ -63,36 +63,34 @@ func createForgotPass(e string) (string, bool) {
 		Code: %s
 		<a href="%s/resetpass?code=%s">Click Here</a>
 	`, code, common.OwnServerUrl, code)
-	err := sendEmail([]string{e}, from, msg)
+	err = sendEmail([]string{e}, from, msg)
+
 	if err != nil {
-		return err.Error(), false
+		return err
 	}
 
 	fpM.Save()
 
-	return "", true
+	return nil
 }
 
-func updateForgotPass(cd, p string) (forgotPassModel, bool) {
-	c, ok := ForgotPasses.ReadByCode(cd)
-
-	if !ok {
-		return forgotPassModel{}, false
+func updateForgotPass(cd, p string) (forgotPassModel, error) {
+	c, err := ForgotPasses.ReadByCode(cd)
+	if err != nil {
+		return forgotPassModel{}, err
 	}
 
-	nfpM, ok := c.Update(forgotPassModel{IsClaimed: true})
-
-	if !ok {
-		return forgotPassModel{}, false
+	nfpM, err := c.Update(forgotPassModel{IsClaimed: true})
+	if err != nil {
+		return forgotPassModel{}, err
 	}
 
-	u, ok := users.ReadByEmail(nfpM.Email)
-
-	if !ok {
-		return forgotPassModel{}, false
+	u, err := users.ReadByEmail(nfpM.Email)
+	if err != nil {
+		return forgotPassModel{}, err
 	}
 
-	u, ok = u.Update(userModel{Password: p})
+	u, err = u.Update(userModel{Password: p})
 
-	return nfpM, ok
+	return nfpM, err
 }

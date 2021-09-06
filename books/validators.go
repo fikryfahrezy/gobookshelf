@@ -1,5 +1,7 @@
 package books
 
+import "errors"
+
 type bookReq struct {
 	Name      string `json:"name"`
 	Year      int    `json:"year"`
@@ -11,28 +13,28 @@ type bookReq struct {
 	Reading   bool   `json:"reading"`
 }
 
-func (b *bookReq) Validate() (string, bool) {
+func (b *bookReq) Validate() error {
 	if b.Name == "" {
-		return "Name cannot be empty", false
+		return errors.New("name cannot be empty")
 	}
 
 	if b.Author == "" {
-		return "Author cannot be empty", false
+		return errors.New("author cannot be empty")
 	}
 
 	if b.Summary == "" {
-		return "Summary cannot be empty", false
+		return errors.New("summary cannot be empty")
 	}
 
 	if b.Publisher == "" {
-		return "Publisher cannot be empty", false
+		return errors.New("publisher cannot be empty")
 	}
 
 	if b.ReadPage > b.PageCount {
-		return "Read page cannot be bigger than page count", false
+		return errors.New("read page cannot be bigger than page count")
 	}
 
-	return "", true
+	return nil
 }
 
 type GetBookQuery struct {

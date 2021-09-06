@@ -1,5 +1,7 @@
 package books
 
+import "errors"
+
 func saveBook(b bookModel) bookModel {
 	b.Save()
 
@@ -22,38 +24,36 @@ func GetBooks(q GetBookQuery) []bookModel {
 	return bs
 }
 
-func getBook(id string) (bookModel, bool) {
+func getBook(id string) (bookModel, error) {
 	b := GetAllBooks()
 
 	for _, v := range b {
 		if v.Id == id && !v.IsDeleted {
-			return v, true
+			return v, nil
 		}
 	}
 
-	return bookModel{}, false
+	return bookModel{}, errors.New("book not Found")
 }
 
-func updateBook(id string, nb bookModel) (bookModel, bool) {
-	b, ok := getBook(id)
-
-	if !ok {
-		return b, ok
+func updateBook(id string, nb bookModel) (bookModel, error) {
+	b, err := getBook(id)
+	if err != nil {
+		return b, err
 	}
 
 	b.Update(nb)
 
-	return b, true
+	return b, nil
 }
 
-func deleteBook(id string) (bookModel, bool) {
-	b, ok := getBook(id)
-
-	if !ok {
-		return b, ok
+func deleteBook(id string) (bookModel, error) {
+	b, err := getBook(id)
+	if err != nil {
+		return b, err
 	}
 
 	b.Delete()
 
-	return b, true
+	return b, nil
 }

@@ -85,9 +85,8 @@ func Profile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cv := userSessions.Get(c.Value)
-	u, ok := users.GetUserById(cv)
-
-	if !ok {
+	u, err := users.GetUserById(cv)
+	if err != nil {
 		http.Redirect(w, r, "/", http.StatusFound)
 	}
 
@@ -118,9 +117,9 @@ func ResetPass(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fpm, ok := users.ForgotPasses.ReadByCode(cd)
+	fpm, err := users.ForgotPasses.ReadByCode(cd)
 
-	if !ok || fpm.IsClaimed {
+	if err != nil || fpm.IsClaimed {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}

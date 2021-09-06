@@ -7,17 +7,17 @@ import (
 	"github.com/fikryfahrezy/gobookshelf/utils"
 )
 
-func createImage(f multipart.File, fh multipart.FileHeader) (string, bool) {
+func createImage(f multipart.File, fh multipart.FileHeader) error {
 	alias := utils.RandString(8)
 	fn := fmt.Sprintf("%s-%s", alias, fh.Filename)
-	msg, ok := saveFileToDir(fn, f)
-	if !ok {
-		return msg, ok
+	err := saveFileToDir(fn, f)
+	if err != nil {
+		return err
 	}
 	im := imageModel{Name: fn}
 	im.Save()
 
-	return "", true
+	return nil
 }
 
 func GetImages() []imageModel {

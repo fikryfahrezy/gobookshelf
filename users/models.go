@@ -1,6 +1,7 @@
 package users
 
 import (
+	"errors"
 	"sync"
 	"time"
 
@@ -16,14 +17,14 @@ type userModel struct {
 	Street   string
 }
 
-func (um *userModel) Save() (userModel, bool) {
+func (um *userModel) Save() (userModel, error) {
 	um.Id = utils.RandString(7)
 	ur := users.Insert(*um)
 
 	return *um, ur
 }
 
-func (um *userModel) Update(nu userModel) (userModel, bool) {
+func (um *userModel) Update(nu userModel) (userModel, error) {
 	if nu.Email != "" {
 		um.Email = nu.Email
 	}
@@ -54,66 +55,66 @@ type userDB struct {
 	lock  sync.RWMutex
 }
 
-func (udb *userDB) Insert(u userModel) bool {
+func (udb *userDB) Insert(u userModel) error {
 	udb.lock.Lock()
 	defer udb.lock.Unlock()
 
 	for _, v := range udb.users {
 		if v.Email == u.Email {
-			return false
+			return errors.New("email already exist")
 		}
 	}
 
 	udb.users[time.Now()] = u
 
-	return true
+	return nil
 }
 
-func (udb *userDB) ReadByEmail(k string) (userModel, bool) {
+func (udb *userDB) ReadByEmail(k string) (userModel, error) {
 	udb.lock.RLock()
 	defer udb.lock.RUnlock()
 
 	for _, v := range udb.users {
 		if v.Email == k {
-			return v, true
+			return v, nil
 		}
 	}
 
-	return userModel{}, false
+	return userModel{}, errors.New("user not found")
 }
 
-func (udb *userDB) ReadById(k string) (userModel, bool) {
+func (udb *userDB) ReadById(k string) (userModel, error) {
 	udb.lock.RLock()
 	defer udb.lock.RUnlock()
 
 	for _, v := range udb.users {
 		if v.Id == k {
-			return v, true
+			return v, nil
 		}
 	}
 
-	return userModel{}, false
+	return userModel{}, errors.New("user not found")
 }
 
-func (udb *userDB) Update(u userModel) (userModel, bool) {
+func (udb *userDB) Update(u userModel) (userModel, error) {
 	udb.lock.Lock()
 	defer udb.lock.Unlock()
 
 	for _, v := range udb.users {
 		if v.Email == u.Email && v.Id != u.Id {
-			return userModel{}, false
+			return userModel{}, errors.New("user not found")
 		}
 	}
 
 	for i, v := range udb.users {
 		if v.Id == u.Id {
 			udb.users[i] = u
-			return udb.users[i], true
+			return udb.users[i], nil
 
 		}
 	}
 
-	return userModel{}, false
+	return userModel{}, errors.New("user not found")
 }
 
 var users = userDB{users: make(map[time.Time]userModel)}
@@ -131,7 +132,7 @@ func (fpM *forgotPassModel) Save() {
 	ForgotPasses.Insert(*fpM)
 }
 
-func (fpM *forgotPassModel) Update(nfpM forgotPassModel) (forgotPassModel, bool) {
+func (fpM *forgotPassModel) Update(nfpM forgotPassModel) (forgotPassModel, error) {
 	if nfpM.Code != "" {
 		fpM.Code = nfpM.Code
 	}
@@ -161,28 +162,28 @@ func (fpdb *forgotPassDB) Insert(fp forgotPassModel) {
 	fpdb.users[time.Now()] = fp
 }
 
-func (fpdb *forgotPassDB) ReadByCode(k string) (forgotPassModel, bool) {
+func (fpdb *forgotPassDB) ReadByCode(k string) (forgotPassModel, error) {
 	for _, v := range fpdb.users {
 		if v.Code == k && !v.IsClaimed {
-			return v, true
+			return v, nil
 		}
 	}
 
-	return forgotPassModel{}, false
+	return forgotPassModel{}, errors.New("forgot pass not found")
 }
 
-func (fpdb *forgotPassDB) Update(fp forgotPassModel) (forgotPassModel, bool) {
+func (fpdb *forgotPassDB) Update(fp forgotPassModel) (forgotPassModel, error) {
 	fpdb.lock.Lock()
 	defer fpdb.lock.Unlock()
 
 	for i, v := range fpdb.users {
 		if v.Id == fp.Id {
 			fpdb.users[i] = fp
-			return fpdb.users[i], true
+			return fpdb.users[i], nil
 		}
 	}
 
-	return forgotPassModel{}, false
+	return forgotPassModel{}, errors.New("forgot pass not found")
 }
 
 var ForgotPasses = forgotPassDB{users: make(map[time.Time]forgotPassModel)}

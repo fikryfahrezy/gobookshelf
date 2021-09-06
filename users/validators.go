@@ -1,6 +1,9 @@
 package users
 
-import "net/mail"
+import (
+	"errors"
+	"net/mail"
+)
 
 type userReq struct {
 	Email    string `json:"email"`
@@ -10,38 +13,38 @@ type userReq struct {
 	Street   string `json:"street"`
 }
 
-func (ur *userReq) RegValidate() (string, bool) {
+func (ur *userReq) RegValidate() error {
 	if ur.Email == "" {
-		return "email required", false
+		return errors.New("email required")
 	} else if _, err := mail.ParseAddress(ur.Email); err != nil {
-		return "input valid email", false
+		return errors.New("input valid email")
 	}
 
 	if ur.Password == "" {
-		return "password required", false
+		return errors.New("password required")
 	}
 
 	if ur.Name == "" {
-		return "name required", false
+		return errors.New("name required")
 	}
 
 	if ur.Region == "" {
-		return "region required", false
+		return errors.New("region required")
 	}
 
 	if ur.Street == "" {
-		return "street required", false
+		return errors.New("street required")
 	}
 
-	return "", true
+	return nil
 }
 
-func (ur *userReq) UpValidate() (string, bool) {
+func (ur *userReq) UpValidate() error {
 	if _, err := mail.ParseAddress(ur.Email); ur.Email != "" && err != nil {
-		return "input valid email", false
+		return errors.New("input valid email")
 	}
 
-	return "", true
+	return nil
 }
 
 type loginReq struct {
@@ -49,32 +52,32 @@ type loginReq struct {
 	Password string `json:"password"`
 }
 
-func (ur *loginReq) Validate() (string, bool) {
+func (ur *loginReq) Validate() error {
 	if ur.Email == "" {
-		return "email required", false
+		return errors.New("email required")
 	} else if _, err := mail.ParseAddress(ur.Email); err != nil {
-		return "input valid email", false
+		return errors.New("input valid email")
 	}
 
 	if ur.Password == "" {
-		return "password required", false
+		return errors.New("password required")
 	}
 
-	return "", true
+	return nil
 }
 
 type forgotPassReq struct {
 	Email string `json:"email"`
 }
 
-func (ur *forgotPassReq) Validate() (string, bool) {
+func (ur *forgotPassReq) Validate() error {
 	if ur.Email == "" {
-		return "email required", false
+		return errors.New("email required")
 	} else if _, err := mail.ParseAddress(ur.Email); err != nil {
-		return "input valid email", false
+		return errors.New("input valid email")
 	}
 
-	return "", true
+	return nil
 }
 
 type resetPassReq struct {
@@ -82,14 +85,14 @@ type resetPassReq struct {
 	Pasword string `json:"password"`
 }
 
-func (ur *resetPassReq) Validate() (string, bool) {
+func (ur *resetPassReq) Validate() error {
 	if ur.Pasword == "" {
-		return "password required", false
+		return errors.New("password required")
 	}
 
 	if ur.Code == "" {
-		return "code required", false
+		return errors.New("code required")
 	}
 
-	return "", true
+	return nil
 }

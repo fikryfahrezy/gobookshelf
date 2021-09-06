@@ -8,17 +8,17 @@ import (
 
 func Post(w http.ResponseWriter, r *http.Request) {
 	var b bookReq
-	err := common.DecodeJSONBody(w, r, &b)
-	if err != nil {
-		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+	errDcd := common.DecodeJSONBody(w, r, &b)
+	if errDcd != nil {
+		res := common.CommonResponse{Status: "fail", Message: errDcd.Error(), Data: nil}
 
-		common.ResJSON(w, err.Status, res.Response())
+		common.ResJSON(w, errDcd.Status, res.Response())
 		return
 	}
-	msg, ok := b.Validate()
 
-	if !ok {
-		res := common.CommonResponse{Status: "fail", Message: msg, Data: nil}
+	err := b.Validate()
+	if err != nil {
+		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
 		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
@@ -64,10 +64,9 @@ func GetOne(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	b, ok := getBook(id)
-
-	if !ok {
-		res := common.CommonResponse{Status: "fail", Message: "Not Found", Data: nil}
+	b, err := getBook(id)
+	if err != nil {
+		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
 		common.ResJSON(w, http.StatusNotFound, res.Response())
 		return
@@ -81,18 +80,17 @@ func GetOne(w http.ResponseWriter, r *http.Request) {
 
 func Put(w http.ResponseWriter, r *http.Request) {
 	var b bookReq
-	err := common.DecodeJSONBody(w, r, &b)
-	if err != nil {
-		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+	errDcd := common.DecodeJSONBody(w, r, &b)
+	if errDcd != nil {
+		res := common.CommonResponse{Status: "fail", Message: errDcd.Error(), Data: nil}
 
-		common.ResJSON(w, err.Status, res.Response())
+		common.ResJSON(w, errDcd.Status, res.Response())
 		return
 	}
 
-	msg, ok := b.Validate()
-
-	if !ok {
-		res := common.CommonResponse{Status: "fail", Message: msg, Data: nil}
+	err := b.Validate()
+	if err != nil {
+		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
 		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
@@ -111,10 +109,10 @@ func Put(w http.ResponseWriter, r *http.Request) {
 	nb := bookModel{}
 	mapBook(&nb, b)
 
-	nb, ok = updateBook(id, nb)
+	nb, err = updateBook(id, nb)
 
-	if !ok {
-		res := common.CommonResponse{Status: "fail", Message: "Book with requested ID not found", Data: nil}
+	if err != nil {
+		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
 		common.ResJSON(w, http.StatusNotFound, res.Response())
 		return
@@ -137,10 +135,9 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ob, ok := deleteBook(id)
-
-	if !ok {
-		res := common.CommonResponse{Status: "fail", Message: "Book with requested ID not found", Data: nil}
+	ob, err := deleteBook(id)
+	if err != nil {
+		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
 		common.ResJSON(w, http.StatusNotFound, res.Response())
 		return
