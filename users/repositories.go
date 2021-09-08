@@ -3,7 +3,7 @@ package users
 import (
 	"database/sql"
 	"errors"
-	"log"
+	"fmt"
 	"sync"
 	"time"
 
@@ -163,7 +163,7 @@ func (fpdb *forgotPassDB) Insert(fp forgotPassModel) {
 
 	_, err := sqliteDB.Exec(q, fp.Id, fp.Email, fp.Code, fp.IsClaimed)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 }
 
@@ -190,7 +190,7 @@ func (fpdb *forgotPassDB) Update(fp forgotPassModel) (forgotPassModel, error) {
 	sqliteDB := db.GetSqliteDB()
 	result, err := sqliteDB.Exec("UPDATE user_forgot_pass SET is_claimed = ? WHERE id = ? AND is_claimed=0", fp.IsClaimed, fp.Id)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 
 	rows, err := result.RowsAffected()
