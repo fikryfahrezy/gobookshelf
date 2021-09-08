@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"mime/multipart"
 
-	"github.com/fikryfahrezy/gobookshelf/utils"
+	"github.com/fikryfahrezy/gobookshelf/common"
 )
 
 func createImage(f multipart.File, fh multipart.FileHeader) error {
-	alias := utils.RandString(8)
+	alias := common.RandString(8)
 	fn := fmt.Sprintf("%s-%s", alias, fh.Filename)
 	err := saveFileToDir(fn, f)
 	if err != nil {

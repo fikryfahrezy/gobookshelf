@@ -1,53 +1,64 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/fikryfahrezy/gobookshelf/books"
-	"github.com/fikryfahrezy/gobookshelf/common"
+	"github.com/fikryfahrezy/gobookshelf/db"
 	"github.com/fikryfahrezy/gobookshelf/galleries"
 	"github.com/fikryfahrezy/gobookshelf/geocodings"
+	"github.com/fikryfahrezy/gobookshelf/handler"
 	"github.com/fikryfahrezy/gobookshelf/pages"
 	"github.com/fikryfahrezy/gobookshelf/users"
 )
 
 func main() {
-	books.InitDB()
+	sqliteDb, err := db.InitSqliteDB("data/db")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	defer sqliteDb.Close()
+
+	db.MigrateSqliteDB()
+
+	books.InitDB("data/books.json")
 
 	// Views
-	common.HandlerGET("/", pages.Home)
-	common.HandlerGET("/matrix", pages.Matrix)
-	common.HandlerGET("/register", pages.Register)
-	common.HandlerGET("/logout", pages.Logout)
-	common.HandlerGET("/login", pages.Login)
-	common.HandlerGET("/profile", pages.Profile)
-	common.HandlerGET("/forgotpass", pages.ForgotPass)
-	common.HandlerGET("/resetpass", pages.ResetPass)
-	common.HandlerGET("/gallery", pages.Gallery)
+	handler.HandlerGET("/", pages.Home)
+	handler.HandlerGET("/matrix", pages.Matrix)
+	handler.HandlerGET("/register", pages.Register)
+	handler.HandlerGET("/logout", pages.Logout)
+	handler.HandlerGET("/login", pages.Login)
+	handler.HandlerGET("/profile", pages.Profile)
+	handler.HandlerGET("/forgotpass", pages.ForgotPass) // handler.HandlerGET("/resetpass", pages.ResetPass) // handler.HandlerGET("/gallery", pages.Gallery)
 
 	// Template Proxy
-	common.HandlerPOST("/registration", pages.Registration)
-	common.HandlerPOST("/loginacc", pages.LoginAcc)
-	common.HandlerPATCH("/updateacc", pages.UpdateAcc)
-	common.HandlerPOST("/oauth", pages.Oauth)
+	handler.HandlerPOST("/registration", pages.Registration)
+	handler.HandlerPOST("/loginacc", pages.LoginAcc)
+	handler.HandlerPATCH("/updateacc", pages.UpdateAcc)
+	handler.HandlerPOST("/oauth", pages.Oauth)
 
 	// Apis
-	common.HandlerPOST("/books", books.Post)
-	common.HandlerGET("/books", books.GetAll)
-	common.HandlerGET("/books/:id", books.GetOne)
-	common.HandlerPUT("/books/:id", books.Put)
-	common.HandlerDELETE("/books/:id", books.Delete)
-	common.HandlerPOST("/userreg", users.Registration)
-	common.HandlerPOST("/userlogin", users.Login)
-	common.HandlerPATCH("/updateuser", users.UpdateProfile)
-	common.HandlerPOST("/forgotpassword", users.ForgotPassword)
-	common.HandlerPATCH("/updatepassword", users.UpdatePassword)
-	common.HandlerGET("/countries", geocodings.GetCountries)
-	common.HandlerGET("/street", geocodings.GetStreet)
-	common.HandlerPOST("/galleries", galleries.Post)
-	common.HandlerGET("/galleries", galleries.Get)
+	handler.HandlerPOST("/books", books.Post)
+	handler.HandlerGET("/books", books.GetAll)
+	handler.HandlerGET("/books/:id", books.GetOne)
+	handler.HandlerPUT("/books/:id", books.Put)
+	handler.HandlerDELETE("/books/:id", books.Delete)
+	handler.HandlerPOST("/userreg", users.Registration)
+	handler.HandlerPOST("/userlogin", users.Login)
+	handler.HandlerPATCH("/updateuser", users.UpdateProfile)
+	handler.HandlerPOST("/forgotpassword", users.ForgotPassword)
+	handler.HandlerPATCH("/updatepassword", users.UpdatePassword)
+	handler.HandlerGET("/countries", geocodings.GetCountries)
+	handler.HandlerGET("/street", geocodings.GetStreet)
+	handler.HandlerPOST("/galleries", galleries.Post)
+	handler.HandlerGET("/galleries", galleries.Get)
 
 	// Public path
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
-	common.InitServer(8080)
+	handler.InitServer("http://localhost", 8080)
 }

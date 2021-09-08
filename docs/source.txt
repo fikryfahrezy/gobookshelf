@@ -115,6 +115,9 @@ https://haisum.github.io/2017/09/11/golang-ioutil-readall/
 REF: POST data using the Content-Type multipart/form-data
 https://stackoverflow.com/questions/20205796/post-data-using-the-content-type-multipart-form-data
 
+MICROSERVICES IN GO: GRACEFUL SHUTDOWN
+https://mariocarrion.com/2021/05/21/golang-microservices-graceful-shutdown.html
+
 
 # Non-related to GO
 
@@ -126,3 +129,6 @@ https://stackoverflow.com/questions/21553353/what-is-the-difference-between-cmd-
 
 Copy directory to another directory using ADD command
 https://stackoverflow.com/questions/26504846/copy-directory-to-another-directory-using-add-command
+
+Relational table naming convention
+https://stackoverflow.com/questions/4702728/relational-table-naming-convention

@@ -3,24 +3,24 @@ package books
 import (
 	"net/http"
 
-	"github.com/fikryfahrezy/gobookshelf/common"
+	"github.com/fikryfahrezy/gobookshelf/handler"
 )
 
 func Post(w http.ResponseWriter, r *http.Request) {
 	var b bookReq
-	errDcd := common.DecodeJSONBody(w, r, &b)
+	errDcd := handler.DecodeJSONBody(w, r, &b)
 	if errDcd != nil {
-		res := common.CommonResponse{Status: "fail", Message: errDcd.Error(), Data: nil}
+		res := handler.CommonResponse{Status: "fail", Message: errDcd.Error(), Data: nil}
 
-		common.ResJSON(w, errDcd.Status, res.Response())
+		handler.ResJSON(w, errDcd.Status, res.Response())
 		return
 	}
 
 	err := b.Validate()
 	if err != nil {
-		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
-		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
+		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
 
@@ -29,80 +29,80 @@ func Post(w http.ResponseWriter, r *http.Request) {
 
 	nb = saveBook(nb)
 	bi := bookIdResponse{nb.Id}
-	res := common.CommonResponse{Status: "success", Message: "Book successfully added", Data: bi.Response()}
+	res := handler.CommonResponse{Status: "success", Message: "Book successfully added", Data: bi.Response()}
 
-	common.ResJSON(w, http.StatusCreated, res.Response())
+	handler.ResJSON(w, http.StatusCreated, res.Response())
 }
 
 func GetAll(w http.ResponseWriter, r *http.Request) {
-	common.AllowCORS(&w)
+	handler.AllowCORS(&w)
 
-	q, err := common.ReqQuery(r.URL.String())
+	q, err := handler.ReqQuery(r.URL.String())
 	if err != nil {
-		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: make([]interface{}, 0)}
+		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: make([]interface{}, 0)}
 
-		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
+		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
 
 	bq := GetBookQuery{q("name"), q("reading"), q("finished")}
 	b := GetBooks(bq)
 	bs := booksSerializer{b}
-	res := common.CommonResponse{Status: "success", Message: "", Data: bs.Response()}
+	res := handler.CommonResponse{Status: "success", Message: "", Data: bs.Response()}
 
-	common.ResJSON(w, http.StatusOK, res.Response())
+	handler.ResJSON(w, http.StatusOK, res.Response())
 }
 
 func GetOne(w http.ResponseWriter, r *http.Request) {
-	p := common.ReqParams(r.URL.Path)
+	p := handler.ReqParams(r.URL.Path)
 	id := p("id")
 
 	if id == "" {
-		res := common.CommonResponse{Status: "fail", Message: "Not Found", Data: nil}
+		res := handler.CommonResponse{Status: "fail", Message: "Not Found", Data: nil}
 
-		common.ResJSON(w, http.StatusNotFound, res.Response())
+		handler.ResJSON(w, http.StatusNotFound, res.Response())
 		return
 	}
 
 	b, err := getBook(id)
 	if err != nil {
-		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
-		common.ResJSON(w, http.StatusNotFound, res.Response())
+		handler.ResJSON(w, http.StatusNotFound, res.Response())
 		return
 	}
 
 	bs := bookSerializer{b}
-	res := common.CommonResponse{Status: "success", Message: "", Data: bs.Response()}
+	res := handler.CommonResponse{Status: "success", Message: "", Data: bs.Response()}
 
-	common.ResJSON(w, http.StatusOK, res.Response())
+	handler.ResJSON(w, http.StatusOK, res.Response())
 }
 
 func Put(w http.ResponseWriter, r *http.Request) {
 	var b bookReq
-	errDcd := common.DecodeJSONBody(w, r, &b)
+	errDcd := handler.DecodeJSONBody(w, r, &b)
 	if errDcd != nil {
-		res := common.CommonResponse{Status: "fail", Message: errDcd.Error(), Data: nil}
+		res := handler.CommonResponse{Status: "fail", Message: errDcd.Error(), Data: nil}
 
-		common.ResJSON(w, errDcd.Status, res.Response())
+		handler.ResJSON(w, errDcd.Status, res.Response())
 		return
 	}
 
 	err := b.Validate()
 	if err != nil {
-		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
-		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
+		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
 
-	p := common.ReqParams(r.URL.String())
+	p := handler.ReqParams(r.URL.String())
 	id := p("id")
 
 	if id == "" {
-		res := common.CommonResponse{Status: "fail", Message: "Not Found", Data: nil}
+		res := handler.CommonResponse{Status: "fail", Message: "Not Found", Data: nil}
 
-		common.ResJSON(w, http.StatusNotFound, res.Response())
+		handler.ResJSON(w, http.StatusNotFound, res.Response())
 		return
 	}
 
@@ -112,39 +112,39 @@ func Put(w http.ResponseWriter, r *http.Request) {
 	nb, err = updateBook(id, nb)
 
 	if err != nil {
-		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
-		common.ResJSON(w, http.StatusNotFound, res.Response())
+		handler.ResJSON(w, http.StatusNotFound, res.Response())
 		return
 	}
 
 	bs := bookSerializer{nb}
-	res := common.CommonResponse{Status: "success", Message: "Book successfully updated", Data: bs.Response()}
+	res := handler.CommonResponse{Status: "success", Message: "Book successfully updated", Data: bs.Response()}
 
-	common.ResJSON(w, http.StatusOK, res.Response())
+	handler.ResJSON(w, http.StatusOK, res.Response())
 }
 
 func Delete(w http.ResponseWriter, r *http.Request) {
-	p := common.ReqParams(r.URL.Path)
+	p := handler.ReqParams(r.URL.Path)
 	id := p("id")
 
 	if id == "" {
-		res := common.CommonResponse{Status: "fail", Message: "Not Found", Data: nil}
+		res := handler.CommonResponse{Status: "fail", Message: "Not Found", Data: nil}
 
-		common.ResJSON(w, http.StatusNotFound, res.Response())
+		handler.ResJSON(w, http.StatusNotFound, res.Response())
 		return
 	}
 
 	ob, err := deleteBook(id)
 	if err != nil {
-		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
-		common.ResJSON(w, http.StatusNotFound, res.Response())
+		handler.ResJSON(w, http.StatusNotFound, res.Response())
 		return
 	}
 
 	bs := bookSerializer{ob}
-	res := common.CommonResponse{Status: "success", Message: "Book successfully deleted", Data: bs.Response()}
+	res := handler.CommonResponse{Status: "success", Message: "Book successfully deleted", Data: bs.Response()}
 
-	common.ResJSON(w, http.StatusOK, res.Response())
+	handler.ResJSON(w, http.StatusOK, res.Response())
 }

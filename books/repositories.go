@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fikryfahrezy/gobookshelf/utils"
+	"github.com/fikryfahrezy/gobookshelf/common"
 )
 
 // Make variable exported so can be changed in testing
@@ -33,12 +33,14 @@ func writeFile(f string, b []byte) {
 
 // How to read/write from/to a file using Go
 // https://stackoverflow.com/questions/1821811/how-to-read-write-from-to-a-file-using-go
-func InitDB() {
+func InitDB(f string) {
+	filename = f
+
 	// open input file
 	initdata := []byte("[]")
 
-	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		writeFile(filename, initdata)
+	if _, err := os.Stat(f); os.IsNotExist(err) {
+		writeFile(f, initdata)
 	}
 }
 
@@ -121,7 +123,7 @@ type bookModel struct {
 
 func (b *bookModel) Save() {
 	t := time.Now().UTC().String()
-	b.Id = utils.RandString(5)
+	b.Id = common.RandString(5)
 	b.InsertedAt = t
 	b.UpdatedAt = t
 

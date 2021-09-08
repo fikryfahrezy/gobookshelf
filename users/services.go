@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/fikryfahrezy/gobookshelf/common"
-	"github.com/fikryfahrezy/gobookshelf/utils"
+	"github.com/fikryfahrezy/gobookshelf/handler"
 )
 
 func createUser(nu userModel) (userModel, error) {
@@ -50,28 +50,28 @@ func updateUser(k string, u userModel) (userModel, error) {
 	return c, err
 }
 
-func createForgotPass(e string) error {
+func createForgotPass(e string) (string, error) {
 	_, err := users.ReadByEmail(e)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	from := "email@email.com"
-	code := utils.RandString(15)
+	code := common.RandString(15)
 	fpM := forgotPassModel{Email: e, Code: code}
+	from := "email@email.com"
 	msg := fmt.Sprintf(`
 		Code: %s
 		<a href="%s/resetpass?code=%s">Click Here</a>
-	`, code, common.OwnServerUrl, code)
+	`, code, handler.OwnServerUrl, code)
 	err = sendEmail([]string{e}, from, msg)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	fpM.Save()
 
-	return nil
+	return "", nil
 }
 
 func updateForgotPass(cd, p string) (forgotPassModel, error) {

@@ -5,17 +5,17 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/fikryfahrezy/gobookshelf/common"
+	"github.com/fikryfahrezy/gobookshelf/handler"
 )
 
 func GetCountries(w http.ResponseWriter, r *http.Request) {
-	common.AllowCORS(&w)
+	handler.AllowCORS(&w)
 
-	q, err := common.ReqQuery(r.URL.String())
+	q, err := handler.ReqQuery(r.URL.String())
 	if err != nil {
-		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: make([]interface{}, 0)}
+		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: make([]interface{}, 0)}
 
-		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
+		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
 
@@ -30,17 +30,17 @@ func GetCountries(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: make([]interface{}, 0)}
+		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: make([]interface{}, 0)}
 
-		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
+		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
-		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
+		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
 
@@ -48,25 +48,25 @@ func GetCountries(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(resp.Body).Decode(&res)
 
 	if err != nil {
-		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
-		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
+		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
 
 	defer resp.Body.Close()
 
-	common.ResJSON(w, http.StatusOK, res)
+	handler.ResJSON(w, http.StatusOK, res)
 }
 
 func GetStreet(w http.ResponseWriter, r *http.Request) {
-	common.AllowCORS(&w)
+	handler.AllowCORS(&w)
 
-	q, err := common.ReqQuery(r.URL.String())
+	q, err := handler.ReqQuery(r.URL.String())
 	if err != nil {
-		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
-		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
+		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
 
@@ -74,24 +74,24 @@ func GetStreet(w http.ResponseWriter, r *http.Request) {
 	rg, s := q("region"), q("street")
 
 	if rg == "" || s == "" {
-		res := common.CommonResponse{Status: "fail", Message: "query needed", Data: nil}
+		res := handler.CommonResponse{Status: "fail", Message: "query needed", Data: nil}
 
-		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
+		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://geocode.xyz/?geoit=json&region=%s&streetname=%s", rg, s), nil)
 	if err != nil {
-		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
-		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
+		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
-		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
+		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
 
@@ -99,13 +99,13 @@ func GetStreet(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(resp.Body).Decode(&res)
 
 	if err != nil {
-		res := common.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
-		common.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
+		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
 
 	defer resp.Body.Close()
 
-	common.ResJSON(w, http.StatusOK, res)
+	handler.ResJSON(w, http.StatusOK, res)
 }

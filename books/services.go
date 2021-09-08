@@ -1,6 +1,8 @@
 package books
 
-import "errors"
+import (
+	"errors"
+)
 
 func saveBook(b bookModel) bookModel {
 	b.Save()

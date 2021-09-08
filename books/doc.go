@@ -1,7 +1,7 @@
 /*
 The books module containing the book CRUD operation.
 
-models.go: definition of based data model
+repositories.go: definition of based data model
 
 routers.go: router controller
 
@@ -11,7 +11,7 @@ services.go: core logic
 
 unit_test.go: for testing
 
-utils.go: for utilities logic or code support
+common.go: for utilities logic or code support
 
 validators.go: request validations
 */

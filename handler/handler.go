@@ -1,4 +1,4 @@
-package common
+package handler
 
 import (
 	"encoding/json"
@@ -14,11 +14,11 @@ import (
 var OwnServerUrl = ""
 
 var routeMethods = map[string]string{
-	"GET":    "GET",
-	"POST":   "POST",
-	"PUT":    "PUT",
-	"DELETE": "DELETE",
-	"PATCH":  "PATCH",
+	"GET":    http.MethodGet,
+	"POST":   http.MethodPost,
+	"PUT":    http.MethodPut,
+	"DELETE": http.MethodDelete,
+	"PATCH":  http.MethodPatch,
 }
 
 type RouteChild struct {
@@ -209,9 +209,9 @@ func MakeHandler(w http.ResponseWriter, r *http.Request) {
 	rt(w, r)
 }
 
-func InitServer(p int) {
+func InitServer(a string, p int) {
 	ps := fmt.Sprint(p)
-	OwnServerUrl = fmt.Sprintf("http://localhost:%s", ps)
+	OwnServerUrl = fmt.Sprintf("%s:%s", a, ps)
 
 	for v := range Routes {
 		http.HandleFunc(v, MakeHandler)

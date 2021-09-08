@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fikryfahrezy/gobookshelf/common"
+	"github.com/fikryfahrezy/gobookshelf/handler"
 )
 
 func createBook(id string) bookModel {
@@ -34,8 +34,7 @@ func createBook(id string) bookModel {
 // Testing Your (HTTP) Handlers in Go
 // https://www.cloudbees.com/blog/testing-http-handlers-go
 func TestHandlers(t *testing.T) {
-	filename = "../data/books.json"
-	InitDB()
+	InitDB("../data/books.json")
 
 	cases := []struct {
 		testName              string
@@ -189,11 +188,11 @@ func TestHandlers(t *testing.T) {
 		},
 	}
 
-	common.HandlerPOST("/books", Post)
-	common.HandlerGET("/books", GetAll)
-	common.HandlerGET("/books/:id", GetOne)
-	common.HandlerPUT("/books/:id", Put)
-	common.HandlerDELETE("/books/:id", Delete)
+	handler.HandlerPOST("/books", Post)
+	handler.HandlerGET("/books", GetAll)
+	handler.HandlerGET("/books/:id", GetOne)
+	handler.HandlerPUT("/books/:id", Put)
+	handler.HandlerDELETE("/books/:id", Delete)
 
 	for _, c := range cases {
 		c.init()
@@ -206,7 +205,7 @@ func TestHandlers(t *testing.T) {
 		}
 
 		rr := httptest.NewRecorder()
-		common.MakeHandler(rr, req)
+		handler.MakeHandler(rr, req)
 
 		// For debugging purpose
 		// resp := rr.Result()

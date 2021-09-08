@@ -3,7 +3,7 @@ package galleries
 import (
 	"sync"
 
-	"github.com/fikryfahrezy/gobookshelf/utils"
+	"github.com/fikryfahrezy/gobookshelf/common"
 )
 
 type imageModel struct {
@@ -12,7 +12,7 @@ type imageModel struct {
 }
 
 func (im *imageModel) Save() {
-	im.Id = utils.RandString(5)
+	im.Id = common.RandString(5)
 
 	images.Insert(*im)
 }
@@ -26,7 +26,7 @@ func (idb *imageDB) Insert(im imageModel) string {
 	idb.lock.Lock()
 	defer idb.lock.Unlock()
 
-	k := utils.RandString(7)
+	k := common.RandString(7)
 	idb.images[k] = im
 
 	return k

@@ -7,10 +7,19 @@ import (
 	"testing"
 	"time"
 
-	"github.com/fikryfahrezy/gobookshelf/common"
+	"github.com/fikryfahrezy/gobookshelf/db"
+	"github.com/fikryfahrezy/gobookshelf/handler"
 )
 
 func TestHandlers(t *testing.T) {
+	fDb := "./../data/db-test"
+	_, err := db.InitSqliteTestDB(fDb)
+	if err != nil {
+		t.FailNow()
+	}
+
+	db.MigrateSqliteDB()
+
 	users.users = make(map[time.Time]userModel)
 
 	cases := []struct {
@@ -122,11 +131,58 @@ func TestHandlers(t *testing.T) {
 			http.StatusUnauthorized,
 			4,
 		},
+		{
+			"Request Forgot Password Success",
+			func(r *http.Request) {
+				u := userModel{
+					Email:    "email@email5.com",
+					Password: "password",
+					Name:     "Name",
+					Region:   "Region",
+					Street:   "Street",
+				}
+				createUser(u)
+			},
+			"/forgotpassword",
+			"POST",
+			`{"email":"email@email5.com"}`,
+			http.StatusOK,
+			5,
+		},
+		{
+			"Update Password Success",
+			func(r *http.Request) {
+				u := userModel{
+					Email:    "email@email6.com",
+					Password: "password",
+					Name:     "Name",
+					Region:   "Region",
+					Street:   "Street",
+				}
+				createUser(u)
+
+				fp := forgotPassModel{
+					Id:        "1",
+					Email:     u.Email,
+					Code:      "1",
+					IsClaimed: false,
+				}
+
+				ForgotPasses.Insert(fp)
+			},
+			"/updatepassword",
+			"PATCH",
+			`{"code":"1", "password":"newpassword"}`,
+			http.StatusOK,
+			6,
+		},
 	}
 
-	common.HandlerPOST("/userreg", Registration)
-	common.HandlerPOST("/userlogin", Login)
-	common.HandlerPATCH("/updateprofile", UpdateProfile)
+	handler.HandlerPOST("/userreg", Registration)
+	handler.HandlerPOST("/userlogin", Login)
+	handler.HandlerPATCH("/updateprofile", UpdateProfile)
+	handler.HandlerPOST("/forgotpassword", ForgotPassword)
+	handler.HandlerPATCH("/updatepassword", UpdatePassword)
 
 	for _, c := range cases {
 
@@ -140,7 +196,7 @@ func TestHandlers(t *testing.T) {
 		c.init(req)
 
 		rr := httptest.NewRecorder()
-		common.MakeHandler(rr, req)
+		handler.MakeHandler(rr, req)
 
 		if rr.Result().StatusCode != c.expectedCode {
 			t.FailNow()
@@ -149,5 +205,9 @@ func TestHandlers(t *testing.T) {
 		if len(users.users) != c.expectedResult {
 			t.FailNow()
 		}
+	}
+
+	if err = db.RemoveSqliteTestDB(fDb); err != nil {
+		t.FailNow()
 	}
 }

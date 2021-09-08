@@ -1,11 +1,14 @@
 package users
 
 import (
+	"database/sql"
 	"errors"
+	"log"
 	"sync"
 	"time"
 
-	"github.com/fikryfahrezy/gobookshelf/utils"
+	"github.com/fikryfahrezy/gobookshelf/common"
+	"github.com/fikryfahrezy/gobookshelf/db"
 )
 
 type userModel struct {
@@ -18,7 +21,7 @@ type userModel struct {
 }
 
 func (um *userModel) Save() (userModel, error) {
-	um.Id = utils.RandString(7)
+	um.Id = common.RandString(7)
 	ur := users.Insert(*um)
 
 	return *um, ur
@@ -127,7 +130,7 @@ type forgotPassModel struct {
 }
 
 func (fpM *forgotPassModel) Save() {
-	fpM.Id = utils.RandString(4)
+	fpM.Id = common.RandString(4)
 
 	ForgotPasses.Insert(*fpM)
 }
@@ -150,40 +153,56 @@ func (fpM *forgotPassModel) Update(nfpM forgotPassModel) (forgotPassModel, error
 	return nfpM, ok
 }
 
-type forgotPassDB struct {
-	users map[time.Time]forgotPassModel
-	lock  sync.RWMutex
-}
+type forgotPassDB struct{}
 
 func (fpdb *forgotPassDB) Insert(fp forgotPassModel) {
-	fpdb.lock.Lock()
-	defer fpdb.lock.Unlock()
+	sqliteDB := db.GetSqliteDB()
+	q := `
+		INSERT INTO user_forgot_pass(id, email, code, is_claimed) VALUES( ?, ?, ?, ? )
+	`
 
-	fpdb.users[time.Now()] = fp
+	_, err := sqliteDB.Exec(q, fp.Id, fp.Email, fp.Code, fp.IsClaimed)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (fpdb *forgotPassDB) ReadByCode(k string) (forgotPassModel, error) {
-	for _, v := range fpdb.users {
-		if v.Code == k && !v.IsClaimed {
-			return v, nil
-		}
-	}
+	var fp forgotPassModel
 
-	return forgotPassModel{}, errors.New("forgot pass not found")
+	sqliteDB := db.GetSqliteDB()
+	q := `
+		SELECT id, email, code, is_claimed FROM user_forgot_pass WHERE code=?
+	`
+	err := sqliteDB.QueryRow(q, k).Scan(&fp.Id, &fp.Email, &fp.Code, &fp.IsClaimed)
+
+	switch {
+	case err == sql.ErrNoRows:
+		return fp, errors.New("forgot pass not found")
+	case err != nil:
+		return fp, err
+	default:
+		return fp, nil
+	}
 }
 
 func (fpdb *forgotPassDB) Update(fp forgotPassModel) (forgotPassModel, error) {
-	fpdb.lock.Lock()
-	defer fpdb.lock.Unlock()
-
-	for i, v := range fpdb.users {
-		if v.Id == fp.Id {
-			fpdb.users[i] = fp
-			return fpdb.users[i], nil
-		}
+	sqliteDB := db.GetSqliteDB()
+	result, err := sqliteDB.Exec("UPDATE user_forgot_pass SET is_claimed = ? WHERE id = ? AND is_claimed=0", fp.IsClaimed, fp.Id)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	return forgotPassModel{}, errors.New("forgot pass not found")
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fp, err
+	}
+
+	if rows != 1 {
+		return fp, errors.New("forgot pass not found")
+	}
+
+	return fp, nil
 }
 
-var ForgotPasses = forgotPassDB{users: make(map[time.Time]forgotPassModel)}
+var ForgotPasses = forgotPassDB{}

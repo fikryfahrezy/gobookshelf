@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/fikryfahrezy/gobookshelf/books"
-	"github.com/fikryfahrezy/gobookshelf/common"
 	"github.com/fikryfahrezy/gobookshelf/galleries"
+	"github.com/fikryfahrezy/gobookshelf/handler"
 	"github.com/fikryfahrezy/gobookshelf/users"
 )
 
@@ -23,7 +23,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 		isLogin = true
 	}
 
-	q, err := common.ReqQuery(r.URL.String())
+	q, err := handler.ReqQuery(r.URL.String())
 	if err != nil {
 		http.Redirect(w, r, "/matrix", http.StatusInternalServerError)
 		return
@@ -48,7 +48,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a := authTmplDt{OauthURL: common.OwnServerUrl}
+	a := authTmplDt{OauthURL: handler.OwnServerUrl}
 
 	templates.ExecuteTemplate(w, "register.html", a)
 }
@@ -72,7 +72,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a := authTmplDt{OauthURL: common.OwnServerUrl}
+	a := authTmplDt{OauthURL: handler.OwnServerUrl}
 
 	templates.ExecuteTemplate(w, "login.html", a)
 }
@@ -104,7 +104,7 @@ func ForgotPass(w http.ResponseWriter, r *http.Request) {
 }
 
 func ResetPass(w http.ResponseWriter, r *http.Request) {
-	c, err := common.ReqQuery(r.URL.String())
+	c, err := handler.ReqQuery(r.URL.String())
 	if err != nil {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return

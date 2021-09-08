@@ -3,7 +3,7 @@ package pages
 import (
 	"sync"
 
-	"github.com/fikryfahrezy/gobookshelf/utils"
+	"github.com/fikryfahrezy/gobookshelf/common"
 )
 
 type regResp struct {
@@ -25,7 +25,7 @@ func (us *userSession) Create(v string) string {
 	us.lock.Lock()
 	defer us.lock.Unlock()
 
-	k := utils.RandString(15)
+	k := common.RandString(15)
 
 	us.session[k] = v
 
