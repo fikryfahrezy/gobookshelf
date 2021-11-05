@@ -1,147 +1,135 @@
 package pages
 
-import (
-	"html/template"
-	"net/http"
+// func Matrix(w http.ResponseWriter, r *http.Request) {
+// 	templates.ExecuteTemplate(w, "error.html", nil)
+// }
 
-	"github.com/fikryfahrezy/gobookshelf/books"
-	"github.com/fikryfahrezy/gobookshelf/galleries"
-	"github.com/fikryfahrezy/gobookshelf/handler"
-	"github.com/fikryfahrezy/gobookshelf/users"
-)
+// func Home(w http.ResponseWriter, r *http.Request) {
+// 	isLogin := false
+// 	_, err := r.Cookie(authSessionKey)
+// 	if err == nil {
+// 		isLogin = true
+// 	}
 
-var templates = template.Must(template.ParseGlob("templates/*"))
+// 	q, err := handler.ReqQuery(r.URL.String())
+// 	if err != nil {
+// 		http.Redirect(w, r, "/matrix", http.StatusInternalServerError)
+// 		return
+// 	}
 
-func Matrix(w http.ResponseWriter, r *http.Request) {
-	templates.ExecuteTemplate(w, "error.html", nil)
-}
+// 	b := books.GetBooks(books.GetBookQuery{Name: q("name")})
+// 	d := struct {
+// 		IsLogin bool
+// 		Books   interface{}
+// 	}{
+// 		isLogin,
+// 		b,
+// 	}
 
-func Home(w http.ResponseWriter, r *http.Request) {
-	isLogin := false
-	_, err := r.Cookie(authSessionKey)
-	if err == nil {
-		isLogin = true
-	}
+// 	templates.ExecuteTemplate(w, "home.html", d)
+// }
 
-	q, err := handler.ReqQuery(r.URL.String())
-	if err != nil {
-		http.Redirect(w, r, "/matrix", http.StatusInternalServerError)
-		return
-	}
+// func Register(w http.ResponseWriter, r *http.Request) {
+// 	_, err := r.Cookie(authSessionKey)
+// 	if err == nil {
+// 		http.Redirect(w, r, "/", http.StatusFound)
+// 		return
+// 	}
 
-	b := books.GetBooks(books.GetBookQuery{Name: q("name")})
-	d := struct {
-		IsLogin bool
-		Books   interface{}
-	}{
-		isLogin,
-		b,
-	}
+// 	a := authTmplDt{OauthURL: handler.OwnServerUrl}
 
-	templates.ExecuteTemplate(w, "home.html", d)
-}
+// 	templates.ExecuteTemplate(w, "register.html", a)
+// }
 
-func Register(w http.ResponseWriter, r *http.Request) {
-	_, err := r.Cookie(authSessionKey)
-	if err == nil {
-		http.Redirect(w, r, "/", http.StatusFound)
-		return
-	}
+// func Logout(w http.ResponseWriter, r *http.Request) {
+// 	c, err := r.Cookie(authSessionKey)
+// 	if err != nil {
+// 		http.Redirect(w, r, "/", http.StatusInternalServerError)
+// 		return
+// 	}
 
-	a := authTmplDt{OauthURL: handler.OwnServerUrl}
+// 	userSessions.Delete(c.Value)
+// 	http.SetCookie(w, &http.Cookie{Name: authSessionKey, MaxAge: -1})
+// 	http.Redirect(w, r, "/", http.StatusFound)
+// }
 
-	templates.ExecuteTemplate(w, "register.html", a)
-}
+// func Login(w http.ResponseWriter, r *http.Request) {
+// 	_, err := r.Cookie(authSessionKey)
+// 	if err == nil {
+// 		http.Redirect(w, r, "/", http.StatusFound)
+// 		return
+// 	}
 
-func Logout(w http.ResponseWriter, r *http.Request) {
-	c, err := r.Cookie(authSessionKey)
-	if err != nil {
-		http.Redirect(w, r, "/", http.StatusInternalServerError)
-		return
-	}
+// 	a := authTmplDt{OauthURL: handler.OwnServerUrl}
 
-	userSessions.Delete(c.Value)
-	http.SetCookie(w, &http.Cookie{Name: authSessionKey, MaxAge: -1})
-	http.Redirect(w, r, "/", http.StatusFound)
-}
+// 	templates.ExecuteTemplate(w, "login.html", a)
+// }
 
-func Login(w http.ResponseWriter, r *http.Request) {
-	_, err := r.Cookie(authSessionKey)
-	if err == nil {
-		http.Redirect(w, r, "/", http.StatusFound)
-		return
-	}
+// func Profile(w http.ResponseWriter, r *http.Request) {
+// 	c, err := r.Cookie(authSessionKey)
+// 	if err != nil {
+// 		http.Redirect(w, r, "/", http.StatusFound)
+// 		return
+// 	}
 
-	a := authTmplDt{OauthURL: handler.OwnServerUrl}
+// 	cv := userSessions.Get(c.Value)
+// 	u, err := users.GetUserById(cv)
+// 	if err != nil {
+// 		http.Redirect(w, r, "/", http.StatusFound)
+// 	}
 
-	templates.ExecuteTemplate(w, "login.html", a)
-}
+// 	templates.ExecuteTemplate(w, "profile.html", u)
+// }
 
-func Profile(w http.ResponseWriter, r *http.Request) {
-	c, err := r.Cookie(authSessionKey)
-	if err != nil {
-		http.Redirect(w, r, "/", http.StatusFound)
-		return
-	}
+// func ForgotPass(w http.ResponseWriter, r *http.Request) {
+// 	_, err := r.Cookie(authSessionKey)
+// 	if err == nil {
+// 		http.Redirect(w, r, "/", http.StatusFound)
+// 		return
+// 	}
 
-	cv := userSessions.Get(c.Value)
-	u, err := users.GetUserById(cv)
-	if err != nil {
-		http.Redirect(w, r, "/", http.StatusFound)
-	}
+// 	templates.ExecuteTemplate(w, "forgotpass.html", nil)
+// }
 
-	templates.ExecuteTemplate(w, "profile.html", u)
-}
+// func ResetPass(w http.ResponseWriter, r *http.Request) {
+// 	c, err := handler.ReqQuery(r.URL.String())
+// 	if err != nil {
+// 		http.Redirect(w, r, "/", http.StatusFound)
+// 		return
+// 	}
 
-func ForgotPass(w http.ResponseWriter, r *http.Request) {
-	_, err := r.Cookie(authSessionKey)
-	if err == nil {
-		http.Redirect(w, r, "/", http.StatusFound)
-		return
-	}
+// 	cd := c("code")
 
-	templates.ExecuteTemplate(w, "forgotpass.html", nil)
-}
+// 	if cd == "" {
+// 		http.Redirect(w, r, "/", http.StatusFound)
+// 		return
+// 	}
 
-func ResetPass(w http.ResponseWriter, r *http.Request) {
-	c, err := handler.ReqQuery(r.URL.String())
-	if err != nil {
-		http.Redirect(w, r, "/", http.StatusFound)
-		return
-	}
+// 	fpm, err := users.ForgotPasses.ReadByCode(cd)
 
-	cd := c("code")
+// 	if err != nil || fpm.IsClaimed {
+// 		http.Redirect(w, r, "/", http.StatusFound)
+// 		return
+// 	}
 
-	if cd == "" {
-		http.Redirect(w, r, "/", http.StatusFound)
-		return
-	}
+// 	templates.ExecuteTemplate(w, "resetpass.html", nil)
+// }
 
-	fpm, err := users.ForgotPasses.ReadByCode(cd)
+// func Gallery(w http.ResponseWriter, r *http.Request) {
+// 	isLogin := false
+// 	_, err := r.Cookie(authSessionKey)
+// 	if err == nil {
+// 		isLogin = true
+// 	}
 
-	if err != nil || fpm.IsClaimed {
-		http.Redirect(w, r, "/", http.StatusFound)
-		return
-	}
+// 	im := galleries.GetImages()
+// 	d := struct {
+// 		IsLogin bool
+// 		Images  interface{}
+// 	}{
+// 		isLogin,
+// 		im,
+// 	}
 
-	templates.ExecuteTemplate(w, "resetpass.html", nil)
-}
-
-func Gallery(w http.ResponseWriter, r *http.Request) {
-	isLogin := false
-	_, err := r.Cookie(authSessionKey)
-	if err == nil {
-		isLogin = true
-	}
-
-	im := galleries.GetImages()
-	d := struct {
-		IsLogin bool
-		Images  interface{}
-	}{
-		isLogin,
-		im,
-	}
-
-	templates.ExecuteTemplate(w, "gallery.html", d)
-}
+// 	templates.ExecuteTemplate(w, "gallery.html", d)
+// }

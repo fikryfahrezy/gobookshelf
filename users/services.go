@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/fikryfahrezy/gobookshelf/common"
-	"github.com/fikryfahrezy/gobookshelf/handler"
 )
 
 func createUser(nu userModel) (userModel, error) {
@@ -59,10 +58,14 @@ func createForgotPass(e string) (string, error) {
 	code := common.RandString(15)
 	fpM := forgotPassModel{Email: e, Code: code}
 	from := "email@email.com"
+	// msg := fmt.Sprintf(`
+	// 	Code: %s
+	// 	<a href="%s/resetpass?code=%s">Click Here</a>
+	// `, code, handler.OwnServerUrl, code)
 	msg := fmt.Sprintf(`
 		Code: %s
 		<a href="%s/resetpass?code=%s">Click Here</a>
-	`, code, handler.OwnServerUrl, code)
+	`, code, "hi", code)
 	err = sendEmail([]string{e}, from, msg)
 
 	if err != nil {

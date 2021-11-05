@@ -1,150 +1,144 @@
 package books
 
-import (
-	"net/http"
+// func Post(w http.ResponseWriter, r *http.Request) {
+// 	var b bookReq
+// 	errDcd := handler.DecodeJSONBody(w, r, &b)
+// 	if errDcd != nil {
+// 		res := handler.CommonResponse{Status: "fail", Message: errDcd.Error(), Data: nil}
 
-	"github.com/fikryfahrezy/gobookshelf/handler"
-)
+// 		handler.ResJSON(w, errDcd.Status, res.Response())
+// 		return
+// 	}
 
-func Post(w http.ResponseWriter, r *http.Request) {
-	var b bookReq
-	errDcd := handler.DecodeJSONBody(w, r, &b)
-	if errDcd != nil {
-		res := handler.CommonResponse{Status: "fail", Message: errDcd.Error(), Data: nil}
+// 	err := b.Validate()
+// 	if err != nil {
+// 		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
-		handler.ResJSON(w, errDcd.Status, res.Response())
-		return
-	}
+// 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
+// 		return
+// 	}
 
-	err := b.Validate()
-	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+// 	nb := bookModel{}
+// 	mapBook(&nb, b)
 
-		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
-		return
-	}
+// 	nb = saveBook(nb)
+// 	bi := bookIdResponse{nb.Id}
+// 	res := handler.CommonResponse{Status: "success", Message: "Book successfully added", Data: bi.Response()}
 
-	nb := bookModel{}
-	mapBook(&nb, b)
+// 	handler.ResJSON(w, http.StatusCreated, res.Response())
+// }
 
-	nb = saveBook(nb)
-	bi := bookIdResponse{nb.Id}
-	res := handler.CommonResponse{Status: "success", Message: "Book successfully added", Data: bi.Response()}
+// func GetAll(w http.ResponseWriter, r *http.Request) {
+// 	handler.AllowCORS(&w)
 
-	handler.ResJSON(w, http.StatusCreated, res.Response())
-}
+// 	q, err := handler.ReqQuery(r.URL.String())
+// 	if err != nil {
+// 		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: make([]interface{}, 0)}
 
-func GetAll(w http.ResponseWriter, r *http.Request) {
-	handler.AllowCORS(&w)
+// 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
+// 		return
+// 	}
 
-	q, err := handler.ReqQuery(r.URL.String())
-	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: make([]interface{}, 0)}
+// 	bq := GetBookQuery{q("name"), q("reading"), q("finished")}
+// 	b := GetBooks(bq)
+// 	bs := booksSerializer{b}
+// 	res := handler.CommonResponse{Status: "success", Message: "", Data: bs.Response()}
 
-		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
-		return
-	}
+// 	handler.ResJSON(w, http.StatusOK, res.Response())
+// }
 
-	bq := GetBookQuery{q("name"), q("reading"), q("finished")}
-	b := GetBooks(bq)
-	bs := booksSerializer{b}
-	res := handler.CommonResponse{Status: "success", Message: "", Data: bs.Response()}
+// func GetOne(w http.ResponseWriter, r *http.Request) {
+// 	p := handler.ReqParams(r.URL.Path)
+// 	id := p("id")
 
-	handler.ResJSON(w, http.StatusOK, res.Response())
-}
+// 	if id == "" {
+// 		res := handler.CommonResponse{Status: "fail", Message: "Not Found", Data: nil}
 
-func GetOne(w http.ResponseWriter, r *http.Request) {
-	p := handler.ReqParams(r.URL.Path)
-	id := p("id")
+// 		handler.ResJSON(w, http.StatusNotFound, res.Response())
+// 		return
+// 	}
 
-	if id == "" {
-		res := handler.CommonResponse{Status: "fail", Message: "Not Found", Data: nil}
+// 	b, err := getBook(id)
+// 	if err != nil {
+// 		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
-		handler.ResJSON(w, http.StatusNotFound, res.Response())
-		return
-	}
+// 		handler.ResJSON(w, http.StatusNotFound, res.Response())
+// 		return
+// 	}
 
-	b, err := getBook(id)
-	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+// 	bs := bookSerializer{b}
+// 	res := handler.CommonResponse{Status: "success", Message: "", Data: bs.Response()}
 
-		handler.ResJSON(w, http.StatusNotFound, res.Response())
-		return
-	}
+// 	handler.ResJSON(w, http.StatusOK, res.Response())
+// }
 
-	bs := bookSerializer{b}
-	res := handler.CommonResponse{Status: "success", Message: "", Data: bs.Response()}
+// func Put(w http.ResponseWriter, r *http.Request) {
+// 	var b bookReq
+// 	errDcd := handler.DecodeJSONBody(w, r, &b)
+// 	if errDcd != nil {
+// 		res := handler.CommonResponse{Status: "fail", Message: errDcd.Error(), Data: nil}
 
-	handler.ResJSON(w, http.StatusOK, res.Response())
-}
+// 		handler.ResJSON(w, errDcd.Status, res.Response())
+// 		return
+// 	}
 
-func Put(w http.ResponseWriter, r *http.Request) {
-	var b bookReq
-	errDcd := handler.DecodeJSONBody(w, r, &b)
-	if errDcd != nil {
-		res := handler.CommonResponse{Status: "fail", Message: errDcd.Error(), Data: nil}
+// 	err := b.Validate()
+// 	if err != nil {
+// 		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
-		handler.ResJSON(w, errDcd.Status, res.Response())
-		return
-	}
+// 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
+// 		return
+// 	}
 
-	err := b.Validate()
-	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+// 	p := handler.ReqParams(r.URL.String())
+// 	id := p("id")
 
-		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
-		return
-	}
+// 	if id == "" {
+// 		res := handler.CommonResponse{Status: "fail", Message: "Not Found", Data: nil}
 
-	p := handler.ReqParams(r.URL.String())
-	id := p("id")
+// 		handler.ResJSON(w, http.StatusNotFound, res.Response())
+// 		return
+// 	}
 
-	if id == "" {
-		res := handler.CommonResponse{Status: "fail", Message: "Not Found", Data: nil}
+// 	nb := bookModel{}
+// 	mapBook(&nb, b)
 
-		handler.ResJSON(w, http.StatusNotFound, res.Response())
-		return
-	}
+// 	nb, err = updateBook(id, nb)
 
-	nb := bookModel{}
-	mapBook(&nb, b)
+// 	if err != nil {
+// 		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
-	nb, err = updateBook(id, nb)
+// 		handler.ResJSON(w, http.StatusNotFound, res.Response())
+// 		return
+// 	}
 
-	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+// 	bs := bookSerializer{nb}
+// 	res := handler.CommonResponse{Status: "success", Message: "Book successfully updated", Data: bs.Response()}
 
-		handler.ResJSON(w, http.StatusNotFound, res.Response())
-		return
-	}
+// 	handler.ResJSON(w, http.StatusOK, res.Response())
+// }
 
-	bs := bookSerializer{nb}
-	res := handler.CommonResponse{Status: "success", Message: "Book successfully updated", Data: bs.Response()}
+// func Delete(w http.ResponseWriter, r *http.Request) {
+// 	p := handler.ReqParams(r.URL.Path)
+// 	id := p("id")
 
-	handler.ResJSON(w, http.StatusOK, res.Response())
-}
+// 	if id == "" {
+// 		res := handler.CommonResponse{Status: "fail", Message: "Not Found", Data: nil}
 
-func Delete(w http.ResponseWriter, r *http.Request) {
-	p := handler.ReqParams(r.URL.Path)
-	id := p("id")
+// 		handler.ResJSON(w, http.StatusNotFound, res.Response())
+// 		return
+// 	}
 
-	if id == "" {
-		res := handler.CommonResponse{Status: "fail", Message: "Not Found", Data: nil}
+// 	ob, err := deleteBook(id)
+// 	if err != nil {
+// 		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
 
-		handler.ResJSON(w, http.StatusNotFound, res.Response())
-		return
-	}
+// 		handler.ResJSON(w, http.StatusNotFound, res.Response())
+// 		return
+// 	}
 
-	ob, err := deleteBook(id)
-	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+// 	bs := bookSerializer{ob}
+// 	res := handler.CommonResponse{Status: "success", Message: "Book successfully deleted", Data: bs.Response()}
 
-		handler.ResJSON(w, http.StatusNotFound, res.Response())
-		return
-	}
-
-	bs := bookSerializer{ob}
-	res := handler.CommonResponse{Status: "success", Message: "Book successfully deleted", Data: bs.Response()}
-
-	handler.ResJSON(w, http.StatusOK, res.Response())
-}
+// 	handler.ResJSON(w, http.StatusOK, res.Response())
+// }

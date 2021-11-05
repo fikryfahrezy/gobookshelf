@@ -9,7 +9,7 @@ import (
 func Post(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(1024)
 	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: ""}
+		res := handler.CommonResponse{Message: err.Error(), Data: ""}
 
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
@@ -17,7 +17,7 @@ func Post(w http.ResponseWriter, r *http.Request) {
 
 	f, fh, err := r.FormFile("image")
 	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: ""}
+		res := handler.CommonResponse{Message: err.Error(), Data: ""}
 
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
@@ -28,13 +28,13 @@ func Post(w http.ResponseWriter, r *http.Request) {
 	err = createImage(f, *fh)
 
 	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: ""}
+		res := handler.CommonResponse{Message: err.Error(), Data: ""}
 
 		handler.ResJSON(w, http.StatusInternalServerError, res.Response())
 		return
 	}
 
-	res := handler.CommonResponse{Status: "success", Message: "", Data: ""}
+	res := handler.CommonResponse{Message: "", Data: ""}
 
 	handler.ResJSON(w, http.StatusCreated, res.Response())
 }
@@ -44,7 +44,7 @@ func Get(w http.ResponseWriter, r *http.Request) {
 
 	i := GetImages()
 	ir := imagesResponse{Images: i}
-	res := handler.CommonResponse{Status: "success", Message: "", Data: ir.Response()}
+	res := handler.CommonResponse{Message: "", Data: ir.Response()}
 
 	handler.ResJSON(w, http.StatusOK, res.Response())
 }

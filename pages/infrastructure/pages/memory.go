@@ -6,16 +6,6 @@ import (
 	"github.com/fikryfahrezy/gobookshelf/common"
 )
 
-type regResp struct {
-	Status  string `json:"status"`
-	Message string `json:"message"`
-	Data    string `json:"data"`
-}
-
-type authTmplDt struct {
-	OauthURL string
-}
-
 type userSession struct {
 	session map[string]string
 	lock    sync.RWMutex
@@ -46,6 +36,6 @@ func (us *userSession) Delete(k string) {
 	delete(us.session, k)
 }
 
-var userSessions = userSession{session: make(map[string]string)}
-
-const authSessionKey = "auth"
+func NewUserSession() *userSession {
+	return &userSession{session: make(map[string]string)}
+}

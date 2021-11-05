@@ -1,133 +1,124 @@
 package pages
 
-import (
-	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
+// func Registration(w http.ResponseWriter, r *http.Request) {
+// 	resp, err := http.Post(fmt.Sprintf("%s/userreg", handler.OwnServerUrl), "application/json", r.Body)
+// 	if err != nil {
+// 		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: ""}
 
-	"github.com/fikryfahrezy/gobookshelf/handler"
-)
+// 		handler.ResJSON(w, http.StatusInternalServerError, res.Response())
+// 		return
+// 	}
 
-func Registration(w http.ResponseWriter, r *http.Request) {
-	resp, err := http.Post(fmt.Sprintf("%s/userreg", handler.OwnServerUrl), "application/json", r.Body)
-	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: ""}
+// 	var ur regResp
+// 	err = json.NewDecoder(resp.Body).Decode(&ur)
 
-		handler.ResJSON(w, http.StatusInternalServerError, res.Response())
-		return
-	}
+// 	if err != nil {
+// 		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: ""}
 
-	var ur regResp
-	err = json.NewDecoder(resp.Body).Decode(&ur)
+// 		handler.ResJSON(w, http.StatusInternalServerError, res.Response())
+// 		return
+// 	}
 
-	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: ""}
+// 	defer resp.Body.Close()
 
-		handler.ResJSON(w, http.StatusInternalServerError, res.Response())
-		return
-	}
+// 	if ur.Data == "" {
+// 		res := handler.CommonResponse{Status: "fail", Message: ur.Message, Data: ""}
 
-	defer resp.Body.Close()
+// 		handler.ResJSON(w, resp.StatusCode, res.Response())
+// 		return
+// 	}
 
-	if ur.Data == "" {
-		res := handler.CommonResponse{Status: "fail", Message: ur.Message, Data: ""}
+// 	us := userSessions.Create(ur.Data)
+// 	res := handler.CommonResponse{Status: "success", Message: "", Data: ur.Data}
 
-		handler.ResJSON(w, resp.StatusCode, res.Response())
-		return
-	}
+// 	http.SetCookie(w, &http.Cookie{Name: authSessionKey, Value: us, HttpOnly: true, Secure: true, SameSite: 3})
+// 	handler.ResJSON(w, http.StatusCreated, res.Response())
+// }
 
-	us := userSessions.Create(ur.Data)
-	res := handler.CommonResponse{Status: "success", Message: "", Data: ur.Data}
+// func LoginAcc(w http.ResponseWriter, r *http.Request) {
+// 	resp, err := http.Post(fmt.Sprintf("%s/userlogin", handler.OwnServerUrl), "application/json", r.Body)
+// 	if err != nil {
+// 		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: ""}
 
-	http.SetCookie(w, &http.Cookie{Name: authSessionKey, Value: us, HttpOnly: true, Secure: true, SameSite: 3})
-	handler.ResJSON(w, http.StatusCreated, res.Response())
-}
+// 		handler.ResJSON(w, http.StatusInternalServerError, res.Response())
+// 		return
+// 	}
 
-func LoginAcc(w http.ResponseWriter, r *http.Request) {
-	resp, err := http.Post(fmt.Sprintf("%s/userlogin", handler.OwnServerUrl), "application/json", r.Body)
-	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: ""}
+// 	var ur regResp
+// 	json.NewDecoder(resp.Body).Decode(&ur)
 
-		handler.ResJSON(w, http.StatusInternalServerError, res.Response())
-		return
-	}
+// 	if err != nil {
+// 		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: ""}
 
-	var ur regResp
-	json.NewDecoder(resp.Body).Decode(&ur)
+// 		handler.ResJSON(w, http.StatusInternalServerError, res.Response())
+// 		return
+// 	}
 
-	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: ""}
+// 	if ur.Data == "" {
+// 		res := handler.CommonResponse{Status: "fail", Message: ur.Message, Data: ""}
 
-		handler.ResJSON(w, http.StatusInternalServerError, res.Response())
-		return
-	}
+// 		handler.ResJSON(w, resp.StatusCode, res.Response())
+// 		return
+// 	}
 
-	if ur.Data == "" {
-		res := handler.CommonResponse{Status: "fail", Message: ur.Message, Data: ""}
+// 	us := userSessions.Create(ur.Data)
+// 	res := handler.CommonResponse{Status: "success", Message: "", Data: ur.Data}
 
-		handler.ResJSON(w, resp.StatusCode, res.Response())
-		return
-	}
+// 	http.SetCookie(w, &http.Cookie{Name: authSessionKey, Value: us, HttpOnly: true, Secure: true, SameSite: 3})
+// 	handler.ResJSON(w, http.StatusOK, res)
+// }
 
-	us := userSessions.Create(ur.Data)
-	res := handler.CommonResponse{Status: "success", Message: "", Data: ur.Data}
+// func UpdateAcc(w http.ResponseWriter, r *http.Request) {
+// 	c, ec := r.Cookie(authSessionKey)
 
-	http.SetCookie(w, &http.Cookie{Name: authSessionKey, Value: us, HttpOnly: true, Secure: true, SameSite: 3})
-	handler.ResJSON(w, http.StatusOK, res)
-}
+// 	if ec != nil {
+// 		res := handler.CommonResponse{Status: "fail", Message: ec.Error(), Data: ""}
 
-func UpdateAcc(w http.ResponseWriter, r *http.Request) {
-	c, ec := r.Cookie(authSessionKey)
+// 		handler.ResJSON(w, http.StatusUnauthorized, res.Response())
+// 		return
+// 	}
 
-	if ec != nil {
-		res := handler.CommonResponse{Status: "fail", Message: ec.Error(), Data: ""}
+// 	uc := userSessions.Get(c.Value)
+// 	client := &http.Client{}
+// 	req, err := http.NewRequest("PATCH", fmt.Sprintf("%s/updateuser", handler.OwnServerUrl), r.Body)
+// 	if err != nil {
+// 		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: ""}
 
-		handler.ResJSON(w, http.StatusUnauthorized, res.Response())
-		return
-	}
+// 		handler.ResJSON(w, http.StatusInternalServerError, res.Response())
+// 		return
+// 	}
 
-	uc := userSessions.Get(c.Value)
-	client := &http.Client{}
-	req, err := http.NewRequest("PATCH", fmt.Sprintf("%s/updateuser", handler.OwnServerUrl), r.Body)
-	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: ""}
+// 	req.Header.Add("authorization", uc)
 
-		handler.ResJSON(w, http.StatusInternalServerError, res.Response())
-		return
-	}
+// 	resp, err := client.Do(req)
+// 	if err != nil {
+// 		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: ""}
 
-	req.Header.Add("authorization", uc)
+// 		handler.ResJSON(w, http.StatusInternalServerError, res.Response())
+// 		return
+// 	}
 
-	resp, err := client.Do(req)
-	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: ""}
+// 	var ur regResp
+// 	json.NewDecoder(resp.Body).Decode(&ur)
 
-		handler.ResJSON(w, http.StatusInternalServerError, res.Response())
-		return
-	}
+// 	if ur.Data == "" {
+// 		res := handler.CommonResponse{Status: "fail", Message: ur.Message, Data: ""}
 
-	var ur regResp
-	json.NewDecoder(resp.Body).Decode(&ur)
+// 		handler.ResJSON(w, resp.StatusCode, res.Response())
+// 		return
+// 	}
 
-	if ur.Data == "" {
-		res := handler.CommonResponse{Status: "fail", Message: ur.Message, Data: ""}
+// 	res := handler.CommonResponse{Status: "success", Message: "", Data: ur.Data}
+// 	handler.ResJSON(w, http.StatusOK, res)
+// }
 
-		handler.ResJSON(w, resp.StatusCode, res.Response())
-		return
-	}
+// func Oauth(w http.ResponseWriter, r *http.Request) {
+// 	_, err := io.ReadAll(r.Body)
+// 	if err != nil {
+// 		fmt.Println(err.Error())
+// 	}
 
-	res := handler.CommonResponse{Status: "success", Message: "", Data: ur.Data}
-	handler.ResJSON(w, http.StatusOK, res)
-}
+// 	defer r.Body.Close()
 
-func Oauth(w http.ResponseWriter, r *http.Request) {
-	_, err := io.ReadAll(r.Body)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	defer r.Body.Close()
-
-	http.Redirect(w, r, "/", http.StatusFound)
-}
+// 	http.Redirect(w, r, "/", http.StatusFound)
+// }

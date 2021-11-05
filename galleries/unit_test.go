@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fikryfahrezy/gobookshelf/handler"
+	"github.com/fikryfahrezy/gosrouter"
 )
 
 func TestHandlers(t *testing.T) {
@@ -40,8 +40,8 @@ func TestHandlers(t *testing.T) {
 		},
 	}
 
-	handler.HandlerPOST("/galleries", Post)
-	handler.HandlerGET("/galleries", Get)
+	gosrouter.HandlerPOST("/galleries", Post)
+	gosrouter.HandlerGET("/galleries", Get)
 
 	for _, c := range cases {
 		req, errReq := http.NewRequest(c.method, c.url, nil)
@@ -98,7 +98,7 @@ func TestHandlers(t *testing.T) {
 		}
 
 		rr := httptest.NewRecorder()
-		handler.MakeHandler(rr, req)
+		gosrouter.MakeHandler(rr, req)
 
 		if rr.Result().StatusCode != c.expectedCode {
 			t.FailNow()

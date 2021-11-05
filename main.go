@@ -1,7 +1,10 @@
 package main
 
 import (
+	"embed"
 	"fmt"
+	"html/template"
+	"log"
 	"net/http"
 	"os"
 
@@ -9,10 +12,19 @@ import (
 	"github.com/fikryfahrezy/gobookshelf/db"
 	"github.com/fikryfahrezy/gobookshelf/galleries"
 	"github.com/fikryfahrezy/gobookshelf/geocodings"
-	"github.com/fikryfahrezy/gobookshelf/handler"
-	"github.com/fikryfahrezy/gobookshelf/pages"
+	pages_app "github.com/fikryfahrezy/gobookshelf/pages/application"
+	"github.com/fikryfahrezy/gobookshelf/pages/infrastructure/pages"
+	pages_infra "github.com/fikryfahrezy/gobookshelf/pages/infrastructure/users"
+	pages_http "github.com/fikryfahrezy/gobookshelf/pages/interfaces/http"
 	"github.com/fikryfahrezy/gobookshelf/users"
+	"github.com/fikryfahrezy/gosrouter"
 )
+
+// content holds our static web server content.
+//go:embed assets/* templates/*
+var content embed.FS
+
+var templates = template.Must(template.ParseFS(content, "templates/*"))
 
 func main() {
 	sqliteDb, err := db.InitSqliteDB("data/db")
@@ -27,38 +39,43 @@ func main() {
 
 	books.InitDB("data/books.json")
 
-	// Views
-	handler.HandlerGET("/", pages.Home)
-	handler.HandlerGET("/matrix", pages.Matrix)
-	handler.HandlerGET("/register", pages.Register)
-	handler.HandlerGET("/logout", pages.Logout)
-	handler.HandlerGET("/login", pages.Login)
-	handler.HandlerGET("/profile", pages.Profile)
-	handler.HandlerGET("/forgotpass", pages.ForgotPass) // handler.HandlerGET("/resetpass", pages.ResetPass) // handler.HandlerGET("/gallery", pages.Gallery)
-
 	// Template Proxy
-	handler.HandlerPOST("/registration", pages.Registration)
-	handler.HandlerPOST("/loginacc", pages.LoginAcc)
-	handler.HandlerPATCH("/updateacc", pages.UpdateAcc)
-	handler.HandlerPOST("/oauth", pages.Oauth)
+	// gosrouter.HandlerPOST("/registration", pages.Registration)
+	// gosrouter.HandlerPOST("/loginacc", pages.LoginAcc)
+	// gosrouter.HandlerPATCH("/updateacc", pages.UpdateAcc)
+	// gosrouter.HandlerPOST("/oauth", pages.Oauth)
 
 	// Apis
-	handler.HandlerPOST("/books", books.Post)
-	handler.HandlerGET("/books", books.GetAll)
-	handler.HandlerGET("/books/:id", books.GetOne)
-	handler.HandlerPUT("/books/:id", books.Put)
-	handler.HandlerDELETE("/books/:id", books.Delete)
-	handler.HandlerPOST("/userreg", users.Registration)
-	handler.HandlerPOST("/userlogin", users.Login)
-	handler.HandlerPATCH("/updateuser", users.UpdateProfile)
-	handler.HandlerPOST("/forgotpassword", users.ForgotPassword)
-	handler.HandlerPATCH("/updatepassword", users.UpdatePassword)
-	handler.HandlerGET("/countries", geocodings.GetCountries)
-	handler.HandlerGET("/street", geocodings.GetStreet)
-	handler.HandlerPOST("/galleries", galleries.Post)
-	handler.HandlerGET("/galleries", galleries.Get)
+	// gosrouter.HandlerPOST("/books", books.Post)
+	// gosrouter.HandlerGET("/books", books.GetAll)
+	// gosrouter.HandlerGET("/books/:id", books.GetOne)
+	// gosrouter.HandlerPUT("/books/:id", books.Put)
+	// gosrouter.HandlerDELETE("/books/:id", books.Delete)
+	gosrouter.HandlerPOST("/userreg", users.Registration)
+	gosrouter.HandlerPOST("/userlogin", users.Login)
+	gosrouter.HandlerPATCH("/updateuser", users.UpdateProfile)
+	gosrouter.HandlerPOST("/forgotpassword", users.ForgotPassword)
+	gosrouter.HandlerPATCH("/updatepassword", users.UpdatePassword)
+	gosrouter.HandlerGET("/countries", geocodings.GetCountries)
+	gosrouter.HandlerGET("/street", geocodings.GetStreet)
+	gosrouter.HandlerPOST("/galleries", galleries.Post)
+	gosrouter.HandlerGET("/galleries", galleries.Get)
+
+	ps := pages.NewUserSession()
+	ph := pages_infra.NewHTTPClient("http://localhost:3000")
+	pa := pages_app.NewPagesServices(ph)
+	pages_http.AddRoutes("http://localhost:3000", pa, ps, templates)
 
 	// Public path
-	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
-	handler.InitServer("http://localhost", 8080)
+	http.Handle("/assets/", http.StripPrefix("/", http.FileServer(http.FS(content))))
+
+	for r := range gosrouter.Routes {
+		http.HandleFunc(r, gosrouter.MakeHandler)
+	}
+
+	s := &http.Server{
+		Addr: "localhost:3000",
+	}
+
+	log.Fatal(s.ListenAndServe())
 }

@@ -1,4 +1,6 @@
 github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
+github.com/fikryfahrezy/gosrouter v0.0.0-20210915133704-3b23097d8106 h1:ml95fQWTkAR/5cBgPMQkRkVSKy65ckFgClnbAL6CKoI=
+github.com/fikryfahrezy/gosrouter v0.0.0-20210915133704-3b23097d8106/go.mod h1:4ie/xzQf1SJTJ6Bb8FTZYLhHBu7R02VAamGkJY8h7rE=
 github.com/google/go-cmp v0.5.3/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 h1:Z9n2FFNUXsshfwJMBgNA0RU6/i7WVaAegv3PtuIHPMs=
 github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51/go.mod h1:CzGEWj7cYgsdH8dAjBGEr58BoE7ScuLd+fwFZ44+/x8=

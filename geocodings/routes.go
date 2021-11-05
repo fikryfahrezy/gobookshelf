@@ -13,7 +13,7 @@ func GetCountries(w http.ResponseWriter, r *http.Request) {
 
 	q, err := handler.ReqQuery(r.URL.String())
 	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: make([]interface{}, 0)}
+		res := handler.CommonResponse{Message: err.Error(), Data: make([]interface{}, 0)}
 
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
@@ -30,7 +30,7 @@ func GetCountries(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: make([]interface{}, 0)}
+		res := handler.CommonResponse{Message: err.Error(), Data: make([]interface{}, 0)}
 
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
@@ -38,7 +38,7 @@ func GetCountries(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+		res := handler.CommonResponse{Message: err.Error(), Data: nil}
 
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
@@ -48,7 +48,7 @@ func GetCountries(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(resp.Body).Decode(&res)
 
 	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+		res := handler.CommonResponse{Message: err.Error(), Data: nil}
 
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
@@ -64,7 +64,7 @@ func GetStreet(w http.ResponseWriter, r *http.Request) {
 
 	q, err := handler.ReqQuery(r.URL.String())
 	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+		res := handler.CommonResponse{Message: err.Error(), Data: nil}
 
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
@@ -74,7 +74,7 @@ func GetStreet(w http.ResponseWriter, r *http.Request) {
 	rg, s := q("region"), q("street")
 
 	if rg == "" || s == "" {
-		res := handler.CommonResponse{Status: "fail", Message: "query needed", Data: nil}
+		res := handler.CommonResponse{Message: "query needed", Data: nil}
 
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
@@ -82,14 +82,14 @@ func GetStreet(w http.ResponseWriter, r *http.Request) {
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://geocode.xyz/?geoit=json&region=%s&streetname=%s", rg, s), nil)
 	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+		res := handler.CommonResponse{Message: err.Error(), Data: nil}
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+		res := handler.CommonResponse{Message: err.Error(), Data: nil}
 
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
@@ -99,7 +99,7 @@ func GetStreet(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(resp.Body).Decode(&res)
 
 	if err != nil {
-		res := handler.CommonResponse{Status: "fail", Message: err.Error(), Data: nil}
+		res := handler.CommonResponse{Message: err.Error(), Data: nil}
 
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
