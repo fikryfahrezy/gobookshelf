@@ -10,13 +10,10 @@ import (
 
 	"github.com/fikryfahrezy/gobookshelf/books"
 	"github.com/fikryfahrezy/gobookshelf/db"
-	"github.com/fikryfahrezy/gobookshelf/galleries"
-	"github.com/fikryfahrezy/gobookshelf/geocodings"
 	pages_app "github.com/fikryfahrezy/gobookshelf/pages/application"
 	"github.com/fikryfahrezy/gobookshelf/pages/infrastructure/pages"
 	pages_infra "github.com/fikryfahrezy/gobookshelf/pages/infrastructure/users"
 	pages_http "github.com/fikryfahrezy/gobookshelf/pages/interfaces/http"
-	"github.com/fikryfahrezy/gobookshelf/users"
 	"github.com/fikryfahrezy/gosrouter"
 )
 
@@ -39,27 +36,21 @@ func main() {
 
 	books.InitDB("data/books.json")
 
-	// Template Proxy
-	// gosrouter.HandlerPOST("/registration", pages.Registration)
-	// gosrouter.HandlerPOST("/loginacc", pages.LoginAcc)
-	// gosrouter.HandlerPATCH("/updateacc", pages.UpdateAcc)
-	// gosrouter.HandlerPOST("/oauth", pages.Oauth)
-
 	// Apis
 	// gosrouter.HandlerPOST("/books", books.Post)
 	// gosrouter.HandlerGET("/books", books.GetAll)
 	// gosrouter.HandlerGET("/books/:id", books.GetOne)
 	// gosrouter.HandlerPUT("/books/:id", books.Put)
 	// gosrouter.HandlerDELETE("/books/:id", books.Delete)
-	gosrouter.HandlerPOST("/userreg", users.Registration)
-	gosrouter.HandlerPOST("/userlogin", users.Login)
-	gosrouter.HandlerPATCH("/updateuser", users.UpdateProfile)
-	gosrouter.HandlerPOST("/forgotpassword", users.ForgotPassword)
-	gosrouter.HandlerPATCH("/updatepassword", users.UpdatePassword)
-	gosrouter.HandlerGET("/countries", geocodings.GetCountries)
-	gosrouter.HandlerGET("/street", geocodings.GetStreet)
-	gosrouter.HandlerPOST("/galleries", galleries.Post)
-	gosrouter.HandlerGET("/galleries", galleries.Get)
+	// gosrouter.HandlerPOST("/userreg", users.Registration)
+	// gosrouter.HandlerPOST("/userlogin", users.Login)
+	// gosrouter.HandlerPATCH("/updateuser", users.UpdateProfile)
+	// gosrouter.HandlerPOST("/forgotpassword", users.ForgotPassword)
+	// gosrouter.HandlerPATCH("/updatepassword", users.UpdatePassword)
+	// gosrouter.HandlerGET("/countries", geocodings.GetCountries)
+	// gosrouter.HandlerGET("/street", geocodings.GetStreet)
+	// gosrouter.HandlerPOST("/galleries", galleries.Post)
+	// gosrouter.HandlerGET("/galleries", galleries.Get)
 
 	ps := pages.NewUserSession()
 	ph := pages_infra.NewHTTPClient("http://localhost:3000")

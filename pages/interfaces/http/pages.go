@@ -1,7 +1,9 @@
 package http
 
 import (
+	"fmt"
 	"html/template"
+	"io"
 	"net/http"
 
 	"github.com/fikryfahrezy/gobookshelf/books"
@@ -13,12 +15,17 @@ import (
 	"github.com/fikryfahrezy/gosrouter"
 )
 
-type RegistrationRequest struct {
+type UserdataRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 	Name     string `json:"name"`
 	Region   string `json:"region"`
 	Street   string `json:"street"`
+}
+
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type pagesResource struct {
@@ -33,7 +40,7 @@ type authTmpl struct {
 }
 
 func (p pagesResource) registration(w http.ResponseWriter, r *http.Request) {
-	var b RegistrationRequest
+	var b UserdataRequest
 	errDcd := handler.DecodeJSONBody(w, r, &b)
 	if errDcd != nil {
 		res := handler.CommonResponse{Message: errDcd.Message, Data: ""}
@@ -42,17 +49,17 @@ func (p pagesResource) registration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cmd := application.RegistrationCommand{
-		Email:    b.Email,
-		Password: b.Password,
-		Name:     b.Name,
-		Region:   b.Region,
-		Street:   b.Street,
-	}
-
+	cmd := application.UserCommand(b)
 	d, err := p.service.Registration(cmd)
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
+
+		handler.ResJSON(w, http.StatusBadRequest, res.Response())
+		return
+	}
+
+	if d == "" {
+		res := handler.CommonResponse{Message: "fail", Data: ""}
 
 		handler.ResJSON(w, http.StatusBadRequest, res.Response())
 		return
@@ -63,6 +70,83 @@ func (p pagesResource) registration(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, &http.Cookie{Name: "auth", Value: us, HttpOnly: true, Secure: true, SameSite: 3})
 	handler.ResJSON(w, http.StatusCreated, res.Response())
+}
+
+func (p pagesResource) loginAcc(w http.ResponseWriter, r *http.Request) {
+	var b LoginRequest
+	errDcd := handler.DecodeJSONBody(w, r, &b)
+	if errDcd != nil {
+		res := handler.CommonResponse{Message: errDcd.Message, Data: ""}
+
+		handler.ResJSON(w, http.StatusBadRequest, res.Response())
+		return
+	}
+
+	cmd := application.LoginCommand(b)
+	d, err := p.service.Login(cmd)
+	if err != nil {
+		res := handler.CommonResponse{Message: err.Error(), Data: ""}
+
+		handler.ResJSON(w, http.StatusInternalServerError, res.Response())
+		return
+	}
+
+	if d == "" {
+		res := handler.CommonResponse{Message: "fail", Data: ""}
+
+		handler.ResJSON(w, http.StatusBadRequest, res.Response())
+		return
+	}
+
+	us := p.session.Create(d)
+	res := handler.CommonResponse{ Message: "", Data: d}
+
+	http.SetCookie(w, &http.Cookie{Name: "auth", Value: us, HttpOnly: true, Secure: true, SameSite: 3})
+	handler.ResJSON(w, http.StatusOK, res)
+}
+
+func (p pagesResource) updateAcc(w http.ResponseWriter, r *http.Request) {
+	var b UserdataRequest
+	errDcd := handler.DecodeJSONBody(w, r, &b)
+	if errDcd != nil {
+		res := handler.CommonResponse{Message: errDcd.Message, Data: ""}
+
+		handler.ResJSON(w, http.StatusBadRequest, res.Response())
+		return
+	}
+
+	c, err := r.Cookie("auth")
+	if err != nil {
+		res := handler.CommonResponse{Message: err.Error(), Data: ""}
+
+		handler.ResJSON(w, http.StatusUnauthorized, res.Response())
+		return
+	}
+
+	uc := p.session.Get(c.Value)
+	cmd := application.UserCommand(b)
+	d, err := p.service.UpdateAcc(uc, cmd)
+
+	if d == "" {
+		res := handler.CommonResponse{Message: "fail", Data: ""}
+
+		handler.ResJSON(w, http.StatusBadRequest, res.Response())
+		return
+	}
+
+	res := handler.CommonResponse{Message: "", Data: d}
+	handler.ResJSON(w, http.StatusOK, res)
+}
+
+func (p pagesResource) oauth(w http.ResponseWriter, r *http.Request) {
+	_, err := io.ReadAll(r.Body)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	defer r.Body.Close()
+
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func (p pagesResource) matrix(w http.ResponseWriter, r *http.Request) {
@@ -202,6 +286,9 @@ func (p pagesResource) gallery(w http.ResponseWriter, r *http.Request) {
 func AddRoutes(h string, sr application.PagesService, ss pages.Session, t *template.Template) {
 	r := pagesResource{host: h, service: sr, session: ss, template: t}
 	gosrouter.HandlerPOST("/registration", r.registration)
+	gosrouter.HandlerPOST("/loginacc", r.loginAcc)
+	gosrouter.HandlerPATCH("/updateacc", r.updateAcc)
+	gosrouter.HandlerPOST("/oauth", r.oauth)
 	gosrouter.HandlerGET("/", r.home)
 	gosrouter.HandlerGET("/matrix", r.matrix)
 	gosrouter.HandlerGET("/register", r.register)
@@ -213,6 +300,6 @@ func AddRoutes(h string, sr application.PagesService, ss pages.Session, t *templ
 	gosrouter.HandlerGET("/gallery", r.gallery)
 }
 
-type RegResponseView struct {
+type AuthResponseView struct {
 	Data string `json:"data"`
 }

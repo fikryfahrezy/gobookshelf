@@ -6,9 +6,11 @@ import (
 
 type userService interface {
 	Registration(u pages.User) (string, error)
+	Login(u pages.Auth) (string, error)
+	UpdateAcc(a string, u pages.User) (string, error)
 }
 
-type RegistrationCommand struct {
+type UserCommand struct {
 	Email    string
 	Password string
 	Name     string
@@ -16,13 +18,38 @@ type RegistrationCommand struct {
 	Street   string
 }
 
+type LoginCommand struct {
+	Email    string
+	Password string
+}
+
 type PagesService struct {
 	userService userService
 }
 
-func (p PagesService) Registration(cmd RegistrationCommand) (string, error) {
-	u := pages.User{Email: cmd.Email, Password: cmd.Password, Name: cmd.Name, Region: cmd.Region, Street: cmd.Street}
-	d, err := p.userService.Registration(u)
+func (p PagesService) Registration(u UserCommand) (string, error) {
+	us := pages.User(u)
+	d, err := p.userService.Registration(us)
+	if err != nil {
+		return "", err
+	}
+
+	return d, nil
+}
+
+func (p PagesService) Login(u LoginCommand) (string, error) {
+	a := pages.Auth(u)
+	d, err := p.userService.Login(a)
+	if err != nil {
+		return "", err
+	}
+
+	return d, nil
+}
+
+func (p PagesService) UpdateAcc(a string, u UserCommand) (string, error) {
+	us := pages.User(u)
+	d, err := p.userService.UpdateAcc(a, us)
 	if err != nil {
 		return "", err
 	}
