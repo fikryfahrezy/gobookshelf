@@ -18,7 +18,7 @@ func TestDbConnection(t *testing.T) {
 		t.FailNow()
 	}
 
-	if err = RemoveSqliteTestDB(fd); err != nil {
+	if err = RemoveSqliteTestDB(db, fd); err != nil {
 		t.Log(err.Error())
 		t.FailNow()
 	}
