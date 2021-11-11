@@ -1,14 +1,6 @@
 package users
 
-func mapUser(um *userModel, ur userReq) {
-	um.Email = ur.Email
-	um.Region = ur.Region
-	um.Street = ur.Street
-	um.Name = ur.Name
-	um.Password = ur.Password
-}
-
-func sendEmail(to []string, sender, msg string) error {
+func SendEmail(to []string, sender, msg string) error {
 	// Set up authentication information.
 	// identity := ""
 	// username := ""

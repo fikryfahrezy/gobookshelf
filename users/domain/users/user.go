@@ -1,7 +1,7 @@
-package pages
+package users
 
-type User struct {
-	Id       int
+type UserModel struct {
+	Id       string
 	Email    string
 	Password string
 	Name     string

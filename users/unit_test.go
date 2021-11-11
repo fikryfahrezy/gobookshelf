@@ -1,4 +1,4 @@
-package users
+package users_test
 
 import (
 	"net/http"
@@ -7,20 +7,30 @@ import (
 	"testing"
 	"time"
 
+	user_service "github.com/fikryfahrezy/gobookshelf/users/application"
+	"github.com/fikryfahrezy/gobookshelf/users/infrastructure/forgotpw"
+	user_http "github.com/fikryfahrezy/gobookshelf/users/interfaces/http"
+
+	"github.com/fikryfahrezy/gobookshelf/users/domain/users"
+	user_repository "github.com/fikryfahrezy/gobookshelf/users/infrastructure/users"
+
 	"github.com/fikryfahrezy/gobookshelf/db"
 	"github.com/fikryfahrezy/gosrouter"
 )
 
 func TestHandlers(t *testing.T) {
 	fDb := "./../data/db-test"
-	_, err := db.InitSqliteTestDB(fDb)
+	sdb, err := db.InitSqliteTestDB(fDb)
 	if err != nil {
 		t.FailNow()
 	}
 
-	db.MigrateSqliteDB()
+	db.MigrateSqliteDB(sdb)
 
-	users.users = make(map[time.Time]userModel)
+	ur := user_repository.UserRepository{Users: make(map[time.Time]users.UserModel)}
+	fr := forgotpw.ForgotPassRepository{Db: sdb}
+	us := user_service.UserService{Ur: &ur, Fr: fr}
+	usr := user_http.UserRoutes{Us: us}
 
 	cases := []struct {
 		testName              string
@@ -50,14 +60,14 @@ func TestHandlers(t *testing.T) {
 		{
 			"Login Success",
 			func(r *http.Request) {
-				u := userModel{
+				u := users.UserModel{
 					Email:    "email@email2.com",
 					Password: "password",
 					Name:     "Name",
 					Region:   "Region",
 					Street:   "Street",
 				}
-				createUser(u)
+				ur.Insert(u)
 			},
 			"/userlogin",
 			"POST",
@@ -68,14 +78,14 @@ func TestHandlers(t *testing.T) {
 		{
 			"Login Fail, Password Not Match",
 			func(r *http.Request) {
-				u := userModel{
+				u := users.UserModel{
 					Email:    "email@email3.com",
 					Password: "password",
 					Name:     "Name",
 					Region:   "Region",
 					Street:   "Street",
 				}
-				createUser(u)
+				ur.Insert(u)
 			},
 			"/userlogin",
 			"POST",
@@ -104,7 +114,7 @@ func TestHandlers(t *testing.T) {
 		{
 			"Update Profile Success",
 			func(r *http.Request) {
-				u := userModel{
+				u := users.UserModel{
 					Id:       "1",
 					Email:    "email@email4.com",
 					Password: "password",
@@ -112,8 +122,7 @@ func TestHandlers(t *testing.T) {
 					Region:   "Region",
 					Street:   "Street",
 				}
-
-				users.Insert(u)
+				ur.Insert(u)
 				r.Header.Add("authorization", "1")
 			},
 			"/updateprofile",
@@ -134,14 +143,14 @@ func TestHandlers(t *testing.T) {
 		{
 			"Request Forgot Password Success",
 			func(r *http.Request) {
-				u := userModel{
+				u := users.UserModel{
 					Email:    "email@email5.com",
 					Password: "password",
 					Name:     "Name",
 					Region:   "Region",
 					Street:   "Street",
 				}
-				createUser(u)
+				ur.Insert(u)
 			},
 			"/forgotpassword",
 			"POST",
@@ -152,23 +161,22 @@ func TestHandlers(t *testing.T) {
 		{
 			"Update Password Success",
 			func(r *http.Request) {
-				u := userModel{
+				u := users.UserModel{
 					Email:    "email@email6.com",
 					Password: "password",
 					Name:     "Name",
 					Region:   "Region",
 					Street:   "Street",
 				}
-				createUser(u)
+				ur.Insert(u)
 
-				fp := forgotPassModel{
+				fp := users.ForgotPassModel{
 					Id:        "1",
 					Email:     u.Email,
 					Code:      "1",
 					IsClaimed: false,
 				}
-
-				ForgotPasses.Insert(fp)
+				fr.Insert(fp)
 			},
 			"/updatepassword",
 			"PATCH",
@@ -178,11 +186,11 @@ func TestHandlers(t *testing.T) {
 		},
 	}
 
-	gosrouter.HandlerPOST("/userreg", Registration)
-	gosrouter.HandlerPOST("/userlogin", Login)
-	gosrouter.HandlerPATCH("/updateprofile", UpdateProfile)
-	gosrouter.HandlerPOST("/forgotpassword", ForgotPassword)
-	gosrouter.HandlerPATCH("/updatepassword", UpdatePassword)
+	gosrouter.HandlerPOST("/userreg", usr.Registration)
+	gosrouter.HandlerPOST("/userlogin", usr.Login)
+	gosrouter.HandlerPATCH("/updateprofile", usr.UpdateProfile)
+	gosrouter.HandlerPOST("/forgotpassword", usr.ForgotPassword)
+	gosrouter.HandlerPATCH("/updatepassword", usr.UpdatePassword)
 
 	for _, c := range cases {
 
@@ -202,12 +210,12 @@ func TestHandlers(t *testing.T) {
 			// t.FailNow()
 		}
 
-		if len(users.users) != c.expectedResult {
+		if len(ur.Users) != c.expectedResult {
 			// t.FailNow()
 		}
 	}
 
-	if err = db.RemoveSqliteTestDB(fDb); err != nil {
+	if err = db.RemoveSqliteTestDB(sdb, fDb); err != nil {
 		t.FailNow()
 	}
 }

@@ -11,7 +11,6 @@ import (
 	"github.com/fikryfahrezy/gobookshelf/handler"
 	"github.com/fikryfahrezy/gobookshelf/pages/application"
 	"github.com/fikryfahrezy/gobookshelf/pages/domain/pages"
-	"github.com/fikryfahrezy/gobookshelf/users"
 	"github.com/fikryfahrezy/gosrouter"
 )
 
@@ -99,7 +98,7 @@ func (p pagesResource) loginAcc(w http.ResponseWriter, r *http.Request) {
 	}
 
 	us := p.session.Create(d)
-	res := handler.CommonResponse{ Message: "", Data: d}
+	res := handler.CommonResponse{Message: "", Data: d}
 
 	http.SetCookie(w, &http.Cookie{Name: "auth", Value: us, HttpOnly: true, Secure: true, SameSite: 3})
 	handler.ResJSON(w, http.StatusOK, res)
@@ -222,7 +221,7 @@ func (p pagesResource) profile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cv := p.session.Get(c.Value)
-	u, err := users.GetUserById(cv)
+	u, err := p.service.GetUser(cv)
 	if err != nil {
 		http.Redirect(w, r, "/", http.StatusFound)
 	}
@@ -254,7 +253,7 @@ func (p pagesResource) resetPass(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fpm, err := users.ForgotPasses.ReadByCode(cd)
+	fpm, err := p.service.GetForgotPassword(cd)
 
 	if err != nil || fpm.IsClaimed {
 		http.Redirect(w, r, "/", http.StatusFound)
@@ -300,6 +299,3 @@ func AddRoutes(h string, sr application.PagesService, ss pages.Session, t *templ
 	gosrouter.HandlerGET("/gallery", r.gallery)
 }
 
-type AuthResponseView struct {
-	Data string `json:"data"`
-}

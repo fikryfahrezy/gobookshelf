@@ -9,8 +9,6 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-var sqliteDB *sql.DB
-
 func initSqlite(fd string) (*sql.DB, error) {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -33,8 +31,6 @@ func InitSqliteDB(fd string) (*sql.DB, error) {
 		return nil, err
 	}
 
-	sqliteDB = db
-
 	return db, nil
 }
 
@@ -44,13 +40,11 @@ func InitSqliteTestDB(fd string) (*sql.DB, error) {
 		return nil, err
 	}
 
-	sqliteDB = db
-
 	return db, nil
 }
 
-func RemoveSqliteTestDB(fd string) error {
-	sqliteDB.Close()
+func RemoveSqliteTestDB(db *sql.DB, fd string) error {
+	db.Close()
 	wd, err := os.Getwd()
 	if err != nil {
 		return err
@@ -61,11 +55,7 @@ func RemoveSqliteTestDB(fd string) error {
 	return err
 }
 
-func GetSqliteDB() *sql.DB {
-	return sqliteDB
-}
-
-func MigrateSqliteDB() {
+func MigrateSqliteDB(db *sql.DB) {
 	tables := []string{
 		`
 			CREATE TABLE IF NOT EXISTS user_forgot_pass (
@@ -76,8 +66,6 @@ func MigrateSqliteDB() {
 			);
 		`,
 	}
-
-	db := GetSqliteDB()
 
 	for _, v := range tables {
 		if _, err := db.Exec(v); err != nil {

@@ -7,18 +7,41 @@ import (
 	"net/http"
 
 	"github.com/fikryfahrezy/gobookshelf/pages/domain/pages"
-	http_interface "github.com/fikryfahrezy/gobookshelf/pages/interfaces/http"
 )
 
-type httpClient struct {
+type AuthResponseView struct {
+	Data string `json:"data"`
+}
+
+type UserResponseView struct {
+	Data struct {
+		Id       int    `json:"id"`
+		Email    string `json:"email"`
+		Password string `json:"-"`
+		Name     string `json:"name"`
+		Region   string `json:"region"`
+		Street   string `json:"street"`
+	} `json:"data"`
+}
+
+type ForgotPassView struct {
+	Data struct {
+		Id        int    `json:"id"`
+		Email     string `json:"email"`
+		Code      string `json:"code"`
+		IsClaimed bool   `json:"isclaimed"`
+	} `json:"data"`
+}
+
+type HttpClient struct {
 	address string
 }
 
-func NewHTTPClient(address string) httpClient {
-	return httpClient{address: address}
+func NewHTTPClient(address string) HttpClient {
+	return HttpClient{address: address}
 }
 
-func (h httpClient) Registration(u pages.User) (string, error) {
+func (h HttpClient) Registration(u pages.User) (string, error) {
 	b, err := json.Marshal(u)
 	if err != nil {
 		return "", err
@@ -31,7 +54,7 @@ func (h httpClient) Registration(u pages.User) (string, error) {
 
 	defer resp.Body.Close()
 
-	var r http_interface.AuthResponseView
+	var r AuthResponseView
 	err = json.NewDecoder(resp.Body).Decode(&r)
 	if err != nil {
 		return "", err
@@ -40,7 +63,7 @@ func (h httpClient) Registration(u pages.User) (string, error) {
 	return r.Data, nil
 }
 
-func (h httpClient) Login(a pages.Auth) (string, error) {
+func (h HttpClient) Login(a pages.Auth) (string, error) {
 	b, err := json.Marshal(a)
 	if err != nil {
 		return "", err
@@ -53,7 +76,7 @@ func (h httpClient) Login(a pages.Auth) (string, error) {
 
 	defer resp.Body.Close()
 
-	var r http_interface.AuthResponseView
+	var r AuthResponseView
 	err = json.NewDecoder(resp.Body).Decode(&r)
 	if err != nil {
 		return "", err
@@ -62,7 +85,7 @@ func (h httpClient) Login(a pages.Auth) (string, error) {
 	return r.Data, nil
 }
 
-func (h httpClient) UpdateAcc(a string, u pages.User) (string, error) {
+func (h HttpClient) UpdateAcc(a string, u pages.User) (string, error) {
 	b, err := json.Marshal(u)
 	if err != nil {
 		return "", err
@@ -83,11 +106,66 @@ func (h httpClient) UpdateAcc(a string, u pages.User) (string, error) {
 
 	defer resp.Body.Close()
 
-	var r http_interface.AuthResponseView
+	var r AuthResponseView
 	err = json.NewDecoder(resp.Body).Decode(&r)
 	if err != nil {
 		return "", err
 	}
 
 	return r.Data, nil
+}
+
+func (h HttpClient) GetUser(a string) (pages.User, error) {
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/profile", h.address), nil)
+	if err != nil {
+		return pages.User{}, err
+	}
+
+	req.Header.Add("authorization", a)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return pages.User{}, err
+	}
+
+	defer resp.Body.Close()
+
+	var r UserResponseView
+	err = json.NewDecoder(resp.Body).Decode(&r)
+	if err != nil {
+		return pages.User{}, err
+	}
+
+	return pages.User(r.Data), nil
+}
+
+func (h HttpClient) GetForgotPassword(c string) (pages.ForgotPass, error) {
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/forgotpassword/%s", h.address, c), nil)
+	if err != nil {
+		return pages.ForgotPass{}, err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return pages.ForgotPass{}, err
+	}
+
+	defer resp.Body.Close()
+
+	var r ForgotPassView
+	err = json.NewDecoder(resp.Body).Decode(&r)
+	if err != nil {
+		return pages.ForgotPass{}, err
+	}
+
+	fp := pages.ForgotPass{
+		Id:        r.Data.Id,
+		Email:     r.Data.Email,
+		Code:      r.Data.Code,
+		IsClaimed: r.Data.IsClaimed,
+	}
+
+	return fp, nil
 }
