@@ -116,7 +116,7 @@ func TestBooks(t *testing.T) {
 		{
 			"Success, Book With Required ID found",
 			func() {
-				bi.Save(createBook("1"))
+				bi.Insert(createBook("1"))
 			},
 			"/books/1",
 			"GET",
@@ -142,7 +142,7 @@ func TestBooks(t *testing.T) {
 		{
 			"Success, Book Updated",
 			func() {
-				bi.Save(createBook("2"))
+				bi.Insert(createBook("2"))
 			},
 			"/books/2",
 			"PUT",
@@ -168,7 +168,7 @@ func TestBooks(t *testing.T) {
 		{
 			"Success, Book Deleted",
 			func() {
-				bi.Save(createBook("3"))
+				bi.Insert(createBook("3"))
 			},
 			"/books/3",
 			"DELETE",

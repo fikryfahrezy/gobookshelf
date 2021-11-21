@@ -22,9 +22,6 @@ type FileRepository struct {
 	Filename string
 }
 
-// Make variable exported so can be changed in testing
-var filename = "data/books.json"
-
 func (r FileRepository) WriteFile(b []byte) {
 	fo, err := os.Create(r.Filename)
 	if err != nil {
@@ -44,7 +41,7 @@ func (r FileRepository) WriteFile(b []byte) {
 }
 
 func (r FileRepository) Insert(v interface{}) {
-	fi, err := os.Open(filename)
+	fi, err := os.Open(r.Filename)
 	if err != nil {
 		panic(err)
 	}
@@ -69,7 +66,7 @@ func (r FileRepository) Insert(v interface{}) {
 }
 
 func (r FileRepository) Read(v interface{}) {
-	fi, err := os.Open(filename)
+	fi, err := os.Open(r.Filename)
 	if err != nil {
 		panic(err)
 	}
@@ -84,7 +81,7 @@ func (r FileRepository) Read(v interface{}) {
 }
 
 func (r FileRepository) Rewrite(v interface{}) {
-	fi, err := os.Open(filename)
+	fi, err := os.Open(r.Filename)
 	if err != nil {
 		panic(err)
 	}
@@ -202,7 +199,6 @@ func (r FileRepository) GetSelectedBooks(q GetBookQuery) []books.BookModel {
 // How to read/write from/to a file using Go
 // https://stackoverflow.com/questions/1821811/how-to-read-write-from-to-a-file-using-go
 func InitDB(f string) FileRepository {
-	filename = f
 	fl := FileRepository{Filename: f}
 
 	// open input file

@@ -3,15 +3,16 @@ package main
 import (
 	"embed"
 	"fmt"
+	"html/template"
+	"log"
+	"net/http"
+	"os"
+
 	user_service "github.com/fikryfahrezy/gobookshelf/users/application"
 	"github.com/fikryfahrezy/gobookshelf/users/domain/users"
 	"github.com/fikryfahrezy/gobookshelf/users/infrastructure/forgotpw"
 	user_infra "github.com/fikryfahrezy/gobookshelf/users/infrastructure/users"
 	user_http "github.com/fikryfahrezy/gobookshelf/users/interfaces/http"
-	"html/template"
-	"log"
-	"net/http"
-	"os"
 
 	books_app "github.com/fikryfahrezy/gobookshelf/books/application"
 	books_infra "github.com/fikryfahrezy/gobookshelf/books/infrastructure/books"
