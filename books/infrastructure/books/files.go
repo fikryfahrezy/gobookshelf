@@ -2,19 +2,31 @@ package books
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/fikryfahrezy/gobookshelf/books/domain/books"
 	"github.com/fikryfahrezy/gobookshelf/common"
 )
+
+type GetBookQuery struct {
+	Name     string
+	Reading  string
+	Finished string
+}
+
+type FileRepository struct {
+	Filename string
+}
 
 // Make variable exported so can be changed in testing
 var filename = "data/books.json"
 
-func writeFile(f string, b []byte) {
-	fo, err := os.Create(f)
+func (r FileRepository) WriteFile(b []byte) {
+	fo, err := os.Create(r.Filename)
 	if err != nil {
 		panic(err)
 	}
@@ -31,20 +43,7 @@ func writeFile(f string, b []byte) {
 	}
 }
 
-// How to read/write from/to a file using Go
-// https://stackoverflow.com/questions/1821811/how-to-read-write-from-to-a-file-using-go
-func InitDB(f string) {
-	filename = f
-
-	// open input file
-	initdata := []byte("[]")
-
-	if _, err := os.Stat(f); os.IsNotExist(err) {
-		writeFile(f, initdata)
-	}
-}
-
-func insert(v interface{}) {
+func (r FileRepository) Insert(v interface{}) {
 	fi, err := os.Open(filename)
 	if err != nil {
 		panic(err)
@@ -66,10 +65,10 @@ func insert(v interface{}) {
 		panic(err)
 	}
 
-	writeFile(filename, b)
+	r.WriteFile(b)
 }
 
-func read(v interface{}) {
+func (r FileRepository) Read(v interface{}) {
 	fi, err := os.Open(filename)
 	if err != nil {
 		panic(err)
@@ -84,7 +83,7 @@ func read(v interface{}) {
 	json.NewDecoder(fi).Decode(&v)
 }
 
-func Update(v interface{}) {
+func (r FileRepository) Rewrite(v interface{}) {
 	fi, err := os.Open(filename)
 	if err != nil {
 		panic(err)
@@ -102,41 +101,27 @@ func Update(v interface{}) {
 		panic(err)
 	}
 
-	writeFile(filename, b)
+	r.WriteFile(b)
 }
 
-type bookModel struct {
-	Id         string `json:"id"`
-	Name       string `json:"name"`
-	Year       int    `json:"year"`
-	Author     string `json:"author"`
-	Summary    string `json:"summary"`
-	Publisher  string `json:"publisher"`
-	PageCount  int    `json:"pageCount"`
-	ReadPage   int    `json:"readPage"`
-	Finished   bool   `json:"finished"`
-	Reading    bool   `json:"reading"`
-	IsDeleted  bool   `json:"isDeleted"`
-	InsertedAt string `json:"insertedAt"`
-	UpdatedAt  string `json:"updatedAt"`
-}
-
-func (b *bookModel) Save() {
+func (r FileRepository) Save(b books.BookModel) books.BookModel {
 	t := time.Now().UTC().String()
 	b.Id = common.RandString(5)
 	b.InsertedAt = t
 	b.UpdatedAt = t
 
-	insert(b)
+	r.Insert(b)
+
+	return b
 }
 
-func (b *bookModel) Update(nb bookModel) {
-	var ob bookModel
-	bs := GetAllBooks()
+func (r FileRepository) Update(nb books.BookModel) (books.BookModel, error) {
+	var ob books.BookModel
+	bs := r.GetAllBooks()
 	ci := -1
 
 	for i, v := range bs {
-		if v.Id == b.Id {
+		if v.Id == nb.Id {
 			ci = i
 			ob = v
 			break
@@ -157,34 +142,40 @@ func (b *bookModel) Update(nb bookModel) {
 
 		bs[ci] = ob
 
-		Update(bs)
+		r.Rewrite(bs)
+
+		return ob, nil
 	}
+
+	return books.BookModel{}, errors.New("not found")
 }
 
-func (b *bookModel) Delete() {
-	bs := GetAllBooks()
+func (r FileRepository) Delete(id string) (books.BookModel, error) {
+	bs := r.GetAllBooks()
 
 	for i, v := range bs {
-		if v.Id == b.Id {
+		if v.Id == id {
 			bs[i].IsDeleted = true
+			r.Rewrite(bs)
+			return bs[i], nil
 		}
 	}
 
-	Update(bs)
+	return books.BookModel{}, errors.New("not found")
 }
 
-func GetAllBooks() []bookModel {
-	var b []bookModel
-	read(&b)
+func (r FileRepository) GetAllBooks() []books.BookModel {
+	var b []books.BookModel
+	r.Read(&b)
 
 	return b
 }
 
-func GetSelectedBooks(q GetBookQuery) []bookModel {
-	b := []bookModel{}
-	read(&b)
+func (r FileRepository) GetSelectedBooks(q GetBookQuery) []books.BookModel {
+	var b []books.BookModel
+	r.Read(&b)
 
-	var nb []bookModel
+	var nb []books.BookModel
 	n, f, d := q.Name, q.Finished, q.Reading
 
 	for _, v := range b {
@@ -204,4 +195,20 @@ func GetSelectedBooks(q GetBookQuery) []bookModel {
 	}
 
 	return nb
+}
+
+// InitDB
+//
+// How to read/write from/to a file using Go
+// https://stackoverflow.com/questions/1821811/how-to-read-write-from-to-a-file-using-go
+func InitDB(f string) FileRepository {
+	filename = f
+	fl := FileRepository{Filename: f}
+
+	// open input file
+	if _, err := os.Stat(f); os.IsNotExist(err) {
+		fl.WriteFile([]byte("[]"))
+	}
+
+	return fl
 }

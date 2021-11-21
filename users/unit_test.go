@@ -1,11 +1,11 @@
 package users_test
 
 import (
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 
 	user_service "github.com/fikryfahrezy/gobookshelf/users/application"
 	"github.com/fikryfahrezy/gobookshelf/users/infrastructure/forgotpw"
@@ -18,7 +18,7 @@ import (
 	"github.com/fikryfahrezy/gosrouter"
 )
 
-func TestHandlers(t *testing.T) {
+func TestUsers(t *testing.T) {
 	fDb := "./../data/db-test"
 	sdb, err := db.InitSqliteTestDB(fDb)
 	if err != nil {
@@ -27,10 +27,11 @@ func TestHandlers(t *testing.T) {
 
 	db.MigrateSqliteDB(sdb)
 
-	ur := user_repository.UserRepository{Users: make(map[time.Time]users.UserModel)}
+	ur := user_repository.UserRepository{Users: make(map[string]users.UserModel)}
 	fr := forgotpw.ForgotPassRepository{Db: sdb}
 	us := user_service.UserService{Ur: &ur, Fr: fr}
 	usr := user_http.UserRoutes{Us: us}
+	user_http.AddRoutes(usr)
 
 	cases := []struct {
 		testName              string
@@ -122,8 +123,8 @@ func TestHandlers(t *testing.T) {
 					Region:   "Region",
 					Street:   "Street",
 				}
-				ur.Insert(u)
-				r.Header.Add("authorization", "1")
+				u, _ = ur.Insert(u)
+				r.Header.Add("authorization", u.Id)
 			},
 			"/updateprofile",
 			"PATCH",
@@ -186,36 +187,34 @@ func TestHandlers(t *testing.T) {
 		},
 	}
 
-	gosrouter.HandlerPOST("/userreg", usr.Registration)
-	gosrouter.HandlerPOST("/userlogin", usr.Login)
-	gosrouter.HandlerPATCH("/updateprofile", usr.UpdateProfile)
-	gosrouter.HandlerPOST("/forgotpassword", usr.ForgotPassword)
-	gosrouter.HandlerPATCH("/updatepassword", usr.UpdatePassword)
-
 	for _, c := range cases {
+		t.Run(c.testName, func(t *testing.T) {
+			// Use strings.NewReader() because:
+			// https://golang.org/pkg/strings/#NewReader
+			req, err := http.NewRequest(c.method, c.url, strings.NewReader(c.bodydata))
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		// Use strings.NewReader() because:
-		// https://golang.org/pkg/strings/#NewReader
-		req, err := http.NewRequest(c.method, c.url, strings.NewReader(c.bodydata))
-		if err != nil {
-			// t.Fatal(err)
-		}
+			c.init(req)
 
-		c.init(req)
+			rr := httptest.NewRecorder()
+			gosrouter.MakeHandler(rr, req)
+			resp := rr.Result()
 
-		rr := httptest.NewRecorder()
-		gosrouter.MakeHandler(rr, req)
+			if resp.StatusCode != c.expectedCode {
+				body, _ := io.ReadAll(resp.Body)
+				t.Log(resp.StatusCode)
+				t.Fatal(string(body))
+			}
 
-		if rr.Result().StatusCode != c.expectedCode {
-			// t.FailNow()
-		}
-
-		if len(ur.Users) != c.expectedResult {
-			// t.FailNow()
-		}
+			if len(ur.Users) != c.expectedResult {
+				t.Fatal(len(ur.Users))
+			}
+		})
 	}
 
 	if err = db.RemoveSqliteTestDB(sdb, fDb); err != nil {
-		t.FailNow()
+		t.Fatal(err)
 	}
 }

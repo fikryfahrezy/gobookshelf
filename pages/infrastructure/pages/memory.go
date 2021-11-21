@@ -6,36 +6,32 @@ import (
 	"github.com/fikryfahrezy/gobookshelf/common"
 )
 
-type userSession struct {
-	session map[string]string
-	lock    sync.RWMutex
+type UserSession struct {
+	Session map[string]string
+	Lock    sync.RWMutex
 }
 
-func (us *userSession) Create(v string) string {
-	us.lock.Lock()
-	defer us.lock.Unlock()
+func (us *UserSession) Create(v string) string {
+	us.Lock.Lock()
+	defer us.Lock.Unlock()
 
 	k := common.RandString(15)
 
-	us.session[k] = v
+	us.Session[k] = v
 
 	return k
 }
 
-func (us *userSession) Get(k string) string {
-	us.lock.RLock()
-	defer us.lock.RUnlock()
+func (us *UserSession) Get(k string) string {
+	us.Lock.RLock()
+	defer us.Lock.RUnlock()
 
-	return us.session[k]
+	return us.Session[k]
 }
 
-func (us *userSession) Delete(k string) {
-	us.lock.Lock()
-	defer us.lock.Unlock()
+func (us *UserSession) Delete(k string) {
+	us.Lock.Lock()
+	defer us.Lock.Unlock()
 
-	delete(us.session, k)
-}
-
-func NewUserSession() *userSession {
-	return &userSession{session: make(map[string]string)}
+	delete(us.Session, k)
 }

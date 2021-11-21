@@ -12,6 +12,14 @@ type userService interface {
 	GetForgotPassword(c string) (pages.ForgotPass, error)
 }
 
+type galleryService interface {
+	GetImages() (interface{}, error)
+}
+
+type bookService interface {
+	GetBooks(q string) (interface{}, error)
+}
+
 type UserCommand struct {
 	Email    string
 	Password string
@@ -26,7 +34,9 @@ type LoginCommand struct {
 }
 
 type PagesService struct {
-	userService userService
+	UserService    userService
+	GalleryService galleryService
+	BookService    bookService
 }
 
 func (p PagesService) Registration(u UserCommand) (string, error) {
@@ -37,7 +47,7 @@ func (p PagesService) Registration(u UserCommand) (string, error) {
 		Region:   u.Region,
 		Street:   u.Street,
 	}
-	d, err := p.userService.Registration(us)
+	d, err := p.UserService.Registration(us)
 	if err != nil {
 		return "", err
 	}
@@ -47,7 +57,7 @@ func (p PagesService) Registration(u UserCommand) (string, error) {
 
 func (p PagesService) Login(u LoginCommand) (string, error) {
 	a := pages.Auth(u)
-	d, err := p.userService.Login(a)
+	d, err := p.UserService.Login(a)
 	if err != nil {
 		return "", err
 	}
@@ -63,7 +73,7 @@ func (p PagesService) UpdateAcc(a string, u UserCommand) (string, error) {
 		Region:   u.Region,
 		Street:   u.Street,
 	}
-	d, err := p.userService.UpdateAcc(a, us)
+	d, err := p.UserService.UpdateAcc(a, us)
 	if err != nil {
 		return "", err
 	}
@@ -72,7 +82,7 @@ func (p PagesService) UpdateAcc(a string, u UserCommand) (string, error) {
 }
 
 func (p PagesService) GetUser(a string) (pages.User, error) {
-	u, err := p.userService.GetUser(a)
+	u, err := p.UserService.GetUser(a)
 	if err != nil {
 		return pages.User{}, err
 	}
@@ -81,7 +91,7 @@ func (p PagesService) GetUser(a string) (pages.User, error) {
 }
 
 func (p PagesService) GetForgotPassword(c string) (pages.ForgotPass, error) {
-	s, err := p.userService.GetForgotPassword(c)
+	s, err := p.UserService.GetForgotPassword(c)
 	if err != nil {
 		return s, err
 	}
@@ -90,6 +100,10 @@ func (p PagesService) GetForgotPassword(c string) (pages.ForgotPass, error) {
 
 }
 
-func NewPagesServices(uSr userService) PagesService {
-	return PagesService{userService: uSr}
+func (p PagesService) GetGalleryImages() (interface{}, error) {
+	return p.GalleryService.GetImages()
+}
+
+func (p PagesService) GetBooks(q string) (interface{}, error) {
+	return p.BookService.GetBooks(q)
 }

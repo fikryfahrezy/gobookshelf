@@ -6,8 +6,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/fikryfahrezy/gobookshelf/books"
-	"github.com/fikryfahrezy/gobookshelf/galleries"
 	"github.com/fikryfahrezy/gobookshelf/handler"
 	"github.com/fikryfahrezy/gobookshelf/pages/application"
 	"github.com/fikryfahrezy/gobookshelf/pages/domain/pages"
@@ -27,18 +25,18 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
-type pagesResource struct {
-	service  application.PagesService
-	session  pages.Session
-	template *template.Template
-	host     string
+type PagesResource struct {
+	Service  application.PagesService
+	Session  pages.Session
+	Template *template.Template
+	Host     string
 }
 
 type authTmpl struct {
 	OauthURL string
 }
 
-func (p pagesResource) registration(w http.ResponseWriter, r *http.Request) {
+func (p PagesResource) registration(w http.ResponseWriter, r *http.Request) {
 	var b UserdataRequest
 	errDcd := handler.DecodeJSONBody(w, r, &b)
 	if errDcd != nil {
@@ -49,7 +47,7 @@ func (p pagesResource) registration(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cmd := application.UserCommand(b)
-	d, err := p.service.Registration(cmd)
+	d, err := p.Service.Registration(cmd)
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
 
@@ -64,14 +62,14 @@ func (p pagesResource) registration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	us := p.session.Create(d)
+	us := p.Session.Create(d)
 	res := handler.CommonResponse{Message: "", Data: d}
 
 	http.SetCookie(w, &http.Cookie{Name: "auth", Value: us, HttpOnly: true, Secure: true, SameSite: 3})
 	handler.ResJSON(w, http.StatusCreated, res.Response())
 }
 
-func (p pagesResource) loginAcc(w http.ResponseWriter, r *http.Request) {
+func (p PagesResource) loginAcc(w http.ResponseWriter, r *http.Request) {
 	var b LoginRequest
 	errDcd := handler.DecodeJSONBody(w, r, &b)
 	if errDcd != nil {
@@ -82,7 +80,7 @@ func (p pagesResource) loginAcc(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cmd := application.LoginCommand(b)
-	d, err := p.service.Login(cmd)
+	d, err := p.Service.Login(cmd)
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
 
@@ -97,14 +95,14 @@ func (p pagesResource) loginAcc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	us := p.session.Create(d)
+	us := p.Session.Create(d)
 	res := handler.CommonResponse{Message: "", Data: d}
 
 	http.SetCookie(w, &http.Cookie{Name: "auth", Value: us, HttpOnly: true, Secure: true, SameSite: 3})
 	handler.ResJSON(w, http.StatusOK, res)
 }
 
-func (p pagesResource) updateAcc(w http.ResponseWriter, r *http.Request) {
+func (p PagesResource) updateAcc(w http.ResponseWriter, r *http.Request) {
 	var b UserdataRequest
 	errDcd := handler.DecodeJSONBody(w, r, &b)
 	if errDcd != nil {
@@ -122,9 +120,9 @@ func (p pagesResource) updateAcc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	uc := p.session.Get(c.Value)
+	uc := p.Session.Get(c.Value)
 	cmd := application.UserCommand(b)
-	d, err := p.service.UpdateAcc(uc, cmd)
+	d, err := p.Service.UpdateAcc(uc, cmd)
 
 	if d == "" {
 		res := handler.CommonResponse{Message: "fail", Data: ""}
@@ -137,7 +135,7 @@ func (p pagesResource) updateAcc(w http.ResponseWriter, r *http.Request) {
 	handler.ResJSON(w, http.StatusOK, res)
 }
 
-func (p pagesResource) oauth(w http.ResponseWriter, r *http.Request) {
+func (p PagesResource) oauth(w http.ResponseWriter, r *http.Request) {
 	_, err := io.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -148,11 +146,11 @@ func (p pagesResource) oauth(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
-func (p pagesResource) matrix(w http.ResponseWriter, r *http.Request) {
-	p.template.ExecuteTemplate(w, "error.html", nil)
+func (p PagesResource) matrix(w http.ResponseWriter, r *http.Request) {
+	p.Template.ExecuteTemplate(w, "error.html", nil)
 }
 
-func (p pagesResource) home(w http.ResponseWriter, r *http.Request) {
+func (p PagesResource) home(w http.ResponseWriter, r *http.Request) {
 	isLogin := false
 	_, err := r.Cookie("auth")
 	if err == nil {
@@ -165,7 +163,11 @@ func (p pagesResource) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	b := books.GetBooks(books.GetBookQuery{Name: q("name")})
+	b, err := p.Service.GetBooks(q("name"))
+	if err == nil {
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
 	d := struct {
 		IsLogin bool
 		Books   interface{}
@@ -174,72 +176,72 @@ func (p pagesResource) home(w http.ResponseWriter, r *http.Request) {
 		b,
 	}
 
-	p.template.ExecuteTemplate(w, "home.html", d)
+	p.Template.ExecuteTemplate(w, "home.html", d)
 }
 
-func (p pagesResource) register(w http.ResponseWriter, r *http.Request) {
+func (p PagesResource) register(w http.ResponseWriter, r *http.Request) {
 	_, err := r.Cookie("auth")
 	if err == nil {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 
-	a := authTmpl{OauthURL: p.host}
+	a := authTmpl{OauthURL: p.Host}
 
-	p.template.ExecuteTemplate(w, "register.html", a)
+	p.Template.ExecuteTemplate(w, "register.html", a)
 }
 
-func (p pagesResource) logout(w http.ResponseWriter, r *http.Request) {
+func (p PagesResource) logout(w http.ResponseWriter, r *http.Request) {
 	c, err := r.Cookie("auth")
 	if err != nil {
 		http.Redirect(w, r, "/", http.StatusInternalServerError)
 		return
 	}
 
-	p.session.Delete(c.Value)
+	p.Session.Delete(c.Value)
 	http.SetCookie(w, &http.Cookie{Name: "auth", MaxAge: -1})
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
-func (p pagesResource) login(w http.ResponseWriter, r *http.Request) {
+func (p PagesResource) login(w http.ResponseWriter, r *http.Request) {
 	_, err := r.Cookie("auth")
 	if err == nil {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 
-	a := authTmpl{OauthURL: p.host}
+	a := authTmpl{OauthURL: p.Host}
 
-	p.template.ExecuteTemplate(w, "login.html", a)
+	p.Template.ExecuteTemplate(w, "login.html", a)
 }
 
-func (p pagesResource) profile(w http.ResponseWriter, r *http.Request) {
+func (p PagesResource) profile(w http.ResponseWriter, r *http.Request) {
 	c, err := r.Cookie("auth")
 	if err != nil {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 
-	cv := p.session.Get(c.Value)
-	u, err := p.service.GetUser(cv)
+	cv := p.Session.Get(c.Value)
+	u, err := p.Service.GetUser(cv)
 	if err != nil {
 		http.Redirect(w, r, "/", http.StatusFound)
 	}
 
-	p.template.ExecuteTemplate(w, "profile.html", u)
+	p.Template.ExecuteTemplate(w, "profile.html", u)
 }
 
-func (p pagesResource) forgotPass(w http.ResponseWriter, r *http.Request) {
+func (p PagesResource) forgotPass(w http.ResponseWriter, r *http.Request) {
 	_, err := r.Cookie("auth")
 	if err == nil {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 
-	p.template.ExecuteTemplate(w, "forgotpass.html", nil)
+	p.Template.ExecuteTemplate(w, "forgotpass.html", nil)
 }
 
-func (p pagesResource) resetPass(w http.ResponseWriter, r *http.Request) {
+func (p PagesResource) resetPass(w http.ResponseWriter, r *http.Request) {
 	c, err := handler.ReqQuery(r.URL.String())
 	if err != nil {
 		http.Redirect(w, r, "/", http.StatusFound)
@@ -253,24 +255,29 @@ func (p pagesResource) resetPass(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fpm, err := p.service.GetForgotPassword(cd)
+	fpm, err := p.Service.GetForgotPassword(cd)
 
 	if err != nil || fpm.IsClaimed {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 
-	p.template.ExecuteTemplate(w, "resetpass.html", nil)
+	p.Template.ExecuteTemplate(w, "resetpass.html", nil)
 }
 
-func (p pagesResource) gallery(w http.ResponseWriter, r *http.Request) {
+func (p PagesResource) gallery(w http.ResponseWriter, r *http.Request) {
 	isLogin := false
 	_, err := r.Cookie("auth")
 	if err == nil {
 		isLogin = true
 	}
 
-	im := galleries.GetImages()
+	im, err := p.Service.GalleryService.GetImages()
+	if err != nil {
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
+
 	d := struct {
 		IsLogin bool
 		Images  interface{}
@@ -279,11 +286,10 @@ func (p pagesResource) gallery(w http.ResponseWriter, r *http.Request) {
 		im,
 	}
 
-	p.template.ExecuteTemplate(w, "gallery.html", d)
+	p.Template.ExecuteTemplate(w, "gallery.html", d)
 }
 
-func AddRoutes(h string, sr application.PagesService, ss pages.Session, t *template.Template) {
-	r := pagesResource{host: h, service: sr, session: ss, template: t}
+func AddRoutes(r PagesResource) {
 	gosrouter.HandlerPOST("/registration", r.registration)
 	gosrouter.HandlerPOST("/loginacc", r.loginAcc)
 	gosrouter.HandlerPATCH("/updateacc", r.updateAcc)
@@ -298,4 +304,3 @@ func AddRoutes(h string, sr application.PagesService, ss pages.Session, t *templ
 	gosrouter.HandlerGET("/resetpass", r.resetPass)
 	gosrouter.HandlerGET("/gallery", r.gallery)
 }
-

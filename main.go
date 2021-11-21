@@ -3,23 +3,36 @@ package main
 import (
 	"embed"
 	"fmt"
+	user_service "github.com/fikryfahrezy/gobookshelf/users/application"
+	"github.com/fikryfahrezy/gobookshelf/users/domain/users"
+	"github.com/fikryfahrezy/gobookshelf/users/infrastructure/forgotpw"
+	user_infra "github.com/fikryfahrezy/gobookshelf/users/infrastructure/users"
+	user_http "github.com/fikryfahrezy/gobookshelf/users/interfaces/http"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
-	"time"
 
-	user_service "github.com/fikryfahrezy/gobookshelf/users/application"
-	"github.com/fikryfahrezy/gobookshelf/users/domain/users"
-	"github.com/fikryfahrezy/gobookshelf/users/infrastructure/forgotpw"
-	user_repository "github.com/fikryfahrezy/gobookshelf/users/infrastructure/users"
-	user_http "github.com/fikryfahrezy/gobookshelf/users/interfaces/http"
+	books_app "github.com/fikryfahrezy/gobookshelf/books/application"
+	books_infra "github.com/fikryfahrezy/gobookshelf/books/infrastructure/books"
+	books_http "github.com/fikryfahrezy/gobookshelf/books/interfaces/http"
 
-	"github.com/fikryfahrezy/gobookshelf/books"
+	geocodings_app "github.com/fikryfahrezy/gobookshelf/geocodings/application"
+	geocodings_infra_countries "github.com/fikryfahrezy/gobookshelf/geocodings/infrastructure/countries"
+	geocodings_infra_geocode "github.com/fikryfahrezy/gobookshelf/geocodings/infrastructure/geocode"
+	geocodings_http "github.com/fikryfahrezy/gobookshelf/geocodings/interfaces/http"
+
+	galleries_app "github.com/fikryfahrezy/gobookshelf/galleries/application"
+	"github.com/fikryfahrezy/gobookshelf/galleries/domain/galleries"
+	galleries_infra "github.com/fikryfahrezy/gobookshelf/galleries/infrastructure/galleries"
+	galleries_http "github.com/fikryfahrezy/gobookshelf/galleries/interfaces/http"
+
 	"github.com/fikryfahrezy/gobookshelf/db"
 	pages_app "github.com/fikryfahrezy/gobookshelf/pages/application"
+	pages_infra_books "github.com/fikryfahrezy/gobookshelf/pages/infrastructure/books"
+	pages_infra_galleries "github.com/fikryfahrezy/gobookshelf/pages/infrastructure/galleries"
 	"github.com/fikryfahrezy/gobookshelf/pages/infrastructure/pages"
-	pages_infra "github.com/fikryfahrezy/gobookshelf/pages/infrastructure/users"
+	pages_infra_users "github.com/fikryfahrezy/gobookshelf/pages/infrastructure/users"
 	pages_http "github.com/fikryfahrezy/gobookshelf/pages/interfaces/http"
 	"github.com/fikryfahrezy/gosrouter"
 )
@@ -38,32 +51,37 @@ func main() {
 	}
 
 	defer sqliteDb.Close()
-
 	db.MigrateSqliteDB(sqliteDb)
 
-	books.InitDB("data/books.json")
+	ps := &pages.UserSession{Session: map[string]string{}}
+	piu := pages_infra_users.HttpClient{Address: "http://localhost:3000"}
+	pig := pages_infra_galleries.HttpClient{Address: "http://localhost:3000"}
+	pib := pages_infra_books.HttpClient{Address: "http://localhost:3000"}
+	pa := pages_app.PagesService{UserService: piu, GalleryService: pig, BookService: pib}
+	pr := pages_http.PagesResource{Host: "http://localhost:3000", Service: pa, Session: ps, Template: templates}
+	pages_http.AddRoutes(pr)
 
-	// Apis
-	// gosrouter.HandlerPOST("/books", books.Post)
-	// gosrouter.HandlerGET("/books", books.GetAll)
-	// gosrouter.HandlerGET("/books/:id", books.GetOne)
-	// gosrouter.HandlerPUT("/books/:id", books.Put)
-	// gosrouter.HandlerDELETE("/books/:id", books.Delete)
-	// gosrouter.HandlerGET("/countries", geocodings.GetCountries)
-	// gosrouter.HandlerGET("/street", geocodings.GetStreet)
-	// gosrouter.HandlerPOST("/galleries", galleries.Post)
-	// gosrouter.HandlerGET("/galleries", galleries.Get)
-
-	ps := pages.NewUserSession()
-	ph := pages_infra.NewHTTPClient("http://localhost:3000")
-	pa := pages_app.NewPagesServices(ph)
-	pages_http.AddRoutes("http://localhost:3000", pa, ps, templates)
-
-	ur := user_repository.UserRepository{Users: make(map[time.Time]users.UserModel)}
+	ur := user_infra.UserRepository{Users: make(map[string]users.UserModel)}
 	fr := forgotpw.ForgotPassRepository{Db: sqliteDb}
 	us := user_service.UserService{Ur: &ur, Fr: fr}
 	usr := user_http.UserRoutes{Us: us}
 	user_http.AddRoutes(usr)
+
+	gc := geocodings_infra_countries.HttpClient{Address: "https://restcountries.com"}
+	gg := geocodings_infra_geocode.HttpClient{Address: "https://geocode.xyz"}
+	gs := geocodings_app.GeocodeService{CountriesService: gc, GeoCodeService: gg}
+	gr := geocodings_http.GeocodingsResource{Service: gs}
+	geocodings_http.AddRoutes(gr)
+
+	gli := galleries_infra.ImageRepository{Images: make(map[string]galleries.GalleryModel)}
+	gls := galleries_app.GalleryService{Gr: &gli}
+	glr := galleries_http.GalleriesResource{Service: gls}
+	galleries_http.AddRoutes(glr)
+
+	bi := books_infra.InitDB("data/books.json")
+	ba := books_app.BookService{Fr: bi}
+	bh := books_http.BookResource{Service: ba}
+	books_http.AddRoutes(bh)
 
 	// Public path
 	http.Handle("/assets/", http.StripPrefix("/", http.FileServer(http.FS(content))))

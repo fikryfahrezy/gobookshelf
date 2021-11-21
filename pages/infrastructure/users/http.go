@@ -34,11 +34,7 @@ type ForgotPassView struct {
 }
 
 type HttpClient struct {
-	address string
-}
-
-func NewHTTPClient(address string) HttpClient {
-	return HttpClient{address: address}
+	Address string
 }
 
 func (h HttpClient) Registration(u pages.User) (string, error) {
@@ -47,7 +43,7 @@ func (h HttpClient) Registration(u pages.User) (string, error) {
 		return "", err
 	}
 
-	resp, err := http.Post(fmt.Sprintf("%s/userreg", h.address), "application/json", bytes.NewReader(b))
+	resp, err := http.Post(fmt.Sprintf("%s/userreg", h.Address), "application/json", bytes.NewReader(b))
 	if err != nil {
 		return "", err
 	}
@@ -69,7 +65,7 @@ func (h HttpClient) Login(a pages.Auth) (string, error) {
 		return "", err
 	}
 
-	resp, err := http.Post(fmt.Sprintf("%s/userlogin", h.address), "application/json", bytes.NewReader(b))
+	resp, err := http.Post(fmt.Sprintf("%s/userlogin", h.Address), "application/json", bytes.NewReader(b))
 	if err != nil {
 		return "", err
 	}
@@ -92,7 +88,7 @@ func (h HttpClient) UpdateAcc(a string, u pages.User) (string, error) {
 	}
 
 	client := &http.Client{}
-	req, err := http.NewRequest("PATCH", fmt.Sprintf("%s/updateuser", h.address), bytes.NewReader(b))
+	req, err := http.NewRequest("PATCH", fmt.Sprintf("%s/updateprofile", h.Address), bytes.NewReader(b))
 	if err != nil {
 		return "", err
 	}
@@ -117,7 +113,7 @@ func (h HttpClient) UpdateAcc(a string, u pages.User) (string, error) {
 
 func (h HttpClient) GetUser(a string) (pages.User, error) {
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/profile", h.address), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/profile", h.Address), nil)
 	if err != nil {
 		return pages.User{}, err
 	}
@@ -142,7 +138,7 @@ func (h HttpClient) GetUser(a string) (pages.User, error) {
 
 func (h HttpClient) GetForgotPassword(c string) (pages.ForgotPass, error) {
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/forgotpassword/%s", h.address, c), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/forgotpassword/%s", h.Address, c), nil)
 	if err != nil {
 		return pages.ForgotPass{}, err
 	}

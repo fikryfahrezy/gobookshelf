@@ -1,14 +1,21 @@
-package books
+package books_test
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/fikryfahrezy/gosrouter"
+
+	books_app "github.com/fikryfahrezy/gobookshelf/books/application"
+	"github.com/fikryfahrezy/gobookshelf/books/domain/books"
+	books_infra "github.com/fikryfahrezy/gobookshelf/books/infrastructure/books"
+	books_http "github.com/fikryfahrezy/gobookshelf/books/interfaces/http"
 )
 
-func createBook(id string) bookModel {
-	b := bookModel{
+func createBook(id string) books.BookModel {
+	b := books.BookModel{
 		id,
 		"Name",
 		1234,
@@ -23,16 +30,16 @@ func createBook(id string) bookModel {
 		"time",
 		"time",
 	}
-
-	insert(b)
-
 	return b
 }
 
 // Testing Your (HTTP) Handlers in Go
 // https://www.cloudbees.com/blog/testing-http-handlers-go
-func TestHandlers(t *testing.T) {
-	InitDB("../data/books.json")
+func TestBooks(t *testing.T) {
+	bi := books_infra.InitDB("../data/books.json")
+	ba := books_app.BookService{Fr: bi}
+	bh := books_http.BookResource{Service: ba}
+	books_http.AddRoutes(bh)
 
 	cases := []struct {
 		testName              string
@@ -99,7 +106,7 @@ func TestHandlers(t *testing.T) {
 		{
 			"Success, With Query `?name=Name`",
 			func() {
-				createBook("5")
+				bi.Save(createBook("5"))
 			},
 			"/books?name=Name",
 			"GET",
@@ -109,7 +116,7 @@ func TestHandlers(t *testing.T) {
 		{
 			"Success, Book With Required ID found",
 			func() {
-				createBook("1")
+				bi.Save(createBook("1"))
 			},
 			"/books/1",
 			"GET",
@@ -135,7 +142,7 @@ func TestHandlers(t *testing.T) {
 		{
 			"Success, Book Updated",
 			func() {
-				createBook("2")
+				bi.Save(createBook("2"))
 			},
 			"/books/2",
 			"PUT",
@@ -161,7 +168,7 @@ func TestHandlers(t *testing.T) {
 		{
 			"Success, Book Deleted",
 			func() {
-				createBook("3")
+				bi.Save(createBook("3"))
 			},
 			"/books/3",
 			"DELETE",
@@ -186,34 +193,30 @@ func TestHandlers(t *testing.T) {
 		},
 	}
 
-	// handler.HandlerPOST("/books", Post)
-	// handler.HandlerGET("/books", GetAll)
-	// handler.HandlerGET("/books/:id", GetOne)
-	// handler.HandlerPUT("/books/:id", Put)
-	// handler.HandlerDELETE("/books/:id", Delete)
-
 	for _, c := range cases {
-		c.init()
+		t.Run(c.testName, func(t *testing.T) {
+			c.init()
 
-		// Use strings.NewReader() because:
-		// https://golang.org/pkg/strings/#NewReader
-		_, err := http.NewRequest(c.method, c.url, strings.NewReader(c.bodydata))
-		if err != nil {
-			// t.Fatal(err)
-		}
+			// Use strings.NewReader() because:
+			// https://golang.org/pkg/strings/#NewReader
+			req, err := http.NewRequest(c.method, c.url, strings.NewReader(c.bodydata))
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		rr := httptest.NewRecorder()
-		// handler.MakeHandler(rr, req)
+			rr := httptest.NewRecorder()
+			gosrouter.MakeHandler(rr, req)
 
-		// For debugging purpose
-		// resp := rr.Result()
-		// body, _ := io.ReadAll(resp.Body)
-		// t.Log(resp.StatusCode)
-		// t.Log(resp.Header.Get("Content-Type"))
-		// t.Log(string(body))
+			// For debugging purpose
+			// resp := rr.Result()
+			// body, _ := io.ReadAll(resp.Body)
+			// t.Log(resp.StatusCode)
+			// t.Log(resp.Header.Get("Content-Type"))
+			// t.Log(string(body))
 
-		if rr.Result().StatusCode != c.expectedCode {
-			// t.FailNow()
-		}
+			if rr.Result().StatusCode != c.expectedCode {
+				t.Fatal(rr.Result().StatusCode)
+			}
+		})
 	}
 }

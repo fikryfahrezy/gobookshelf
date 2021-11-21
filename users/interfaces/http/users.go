@@ -90,12 +90,12 @@ func (ur *forgotPassReq) Validate() error {
 }
 
 type resetPassReq struct {
-	Code    string `json:"code"`
-	Pasword string `json:"password"`
+	Code     string `json:"code"`
+	Password string `json:"password"`
 }
 
 func (ur *resetPassReq) Validate() error {
-	if ur.Pasword == "" {
+	if ur.Password == "" {
 		return errors.New("password required")
 	}
 
@@ -234,7 +234,6 @@ func (s *UserRoutes) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	c := r.Header.Get("authorization")
-
 	if c == "" {
 		res := handler.CommonResponse{Message: http.StatusText(http.StatusUnauthorized), Data: ""}
 
@@ -249,7 +248,7 @@ func (s *UserRoutes) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
 
-		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
+		handler.ResJSON(w, http.StatusNotFound, res.Response())
 		return
 	}
 
@@ -325,7 +324,7 @@ func (s *UserRoutes) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	nfpM, err := s.Us.UpdateForgotPass(u.Code, u.Pasword)
+	nfpM, err := s.Us.UpdateForgotPass(u.Code, u.Password)
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
 
@@ -342,7 +341,7 @@ func AddRoutes(u UserRoutes) {
 	gosrouter.HandlerPOST("/userreg", u.Registration)
 	gosrouter.HandlerPOST("/profile", u.GetProfile)
 	gosrouter.HandlerPOST("/userlogin", u.Login)
-	gosrouter.HandlerPATCH("/updateuser", u.UpdateProfile)
+	gosrouter.HandlerPATCH("/updateprofile", u.UpdateProfile)
 	gosrouter.HandlerPOST("/forgotpassword", u.ForgotPassword)
 	gosrouter.HandlerGET("/forgotpassword/:code", u.GetForgotPassword)
 	gosrouter.HandlerPATCH("/updatepassword", u.UpdatePassword)

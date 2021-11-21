@@ -7,15 +7,15 @@ import (
 	"path/filepath"
 )
 
-var pd = "/assets/images"
+var Fd = "/assets/images"
 
-func saveFileToDir(fn string, f multipart.File) error {
+func SaveFileToDir(fn string, f multipart.File) error {
 	dr, err := os.Getwd()
 	if err != nil {
 		return err
 	}
 
-	l := filepath.Join(dr, pd, fn)
+	l := filepath.Join(dr, Fd, fn)
 	tf, err := os.OpenFile(l, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return err

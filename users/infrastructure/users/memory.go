@@ -2,15 +2,15 @@ package users
 
 import (
 	"errors"
+	"fmt"
 	"sync"
-	"time"
 
 	"github.com/fikryfahrezy/gobookshelf/common"
 	"github.com/fikryfahrezy/gobookshelf/users/domain/users"
 )
 
 type UserRepository struct {
-	Users map[time.Time]users.UserModel
+	Users map[string]users.UserModel
 	lock  sync.RWMutex
 }
 
@@ -19,14 +19,13 @@ func (udb *UserRepository) Insert(u users.UserModel) (users.UserModel, error) {
 	defer udb.lock.Unlock()
 
 	u.Id = common.RandString(7)
-
 	for _, v := range udb.Users {
 		if v.Email == u.Email {
 			return users.UserModel{}, errors.New("email already exist")
 		}
 	}
 
-	udb.Users[time.Now()] = u
+	udb.Users[common.RandString(9)] = u
 
 	return u, nil
 }
@@ -54,7 +53,7 @@ func (udb *UserRepository) ReadById(k string) (users.UserModel, error) {
 		}
 	}
 
-	return users.UserModel{}, errors.New("user not found")
+	return users.UserModel{}, errors.New(fmt.Sprintf("user not found %s", udb.Users))
 }
 
 func (udb *UserRepository) Update(u users.UserModel) (users.UserModel, error) {
@@ -63,7 +62,7 @@ func (udb *UserRepository) Update(u users.UserModel) (users.UserModel, error) {
 
 	for _, v := range udb.Users {
 		if v.Email == u.Email && v.Id != u.Id {
-			return users.UserModel{}, errors.New("user not found")
+			return users.UserModel{}, errors.New("user not foundx")
 		}
 	}
 
@@ -93,5 +92,5 @@ func (udb *UserRepository) Update(u users.UserModel) (users.UserModel, error) {
 		}
 	}
 
-	return users.UserModel{}, errors.New("user not found")
+	return users.UserModel{}, errors.New(fmt.Sprintf("user not foundy %s", u.Id))
 }

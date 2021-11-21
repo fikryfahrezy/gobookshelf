@@ -7,8 +7,7 @@ import (
 	user_common "github.com/fikryfahrezy/gobookshelf/users"
 	"github.com/fikryfahrezy/gobookshelf/users/domain/users"
 
-	"github.com/fikryfahrezy/gobookshelf/users/infrastructure/forgotpw"
-
+	forgotpw_repository "github.com/fikryfahrezy/gobookshelf/users/infrastructure/forgotpw"
 	user_repository "github.com/fikryfahrezy/gobookshelf/users/infrastructure/users"
 
 	"github.com/fikryfahrezy/gobookshelf/common"
@@ -16,7 +15,7 @@ import (
 
 type UserService struct {
 	Ur *user_repository.UserRepository
-	Fr forgotpw.ForgotPassRepository
+	Fr forgotpw_repository.ForgotPassRepository
 }
 
 func (s UserService) CreateUser(nu users.UserModel) (users.UserModel, error) {
@@ -51,14 +50,18 @@ func (s UserService) GetUserById(k string) (users.UserModel, error) {
 }
 
 func (s *UserService) UpdateUser(k string, u users.UserModel) (users.UserModel, error) {
-	c, err := s.GetUserById(k)
+	c, err := s.Ur.ReadById(k)
 	if err != nil {
 		return users.UserModel{}, err
 	}
 
+	u.Id = c.Id
 	c, err = s.Ur.Update(u)
+	if err != nil {
+		return users.UserModel{}, err
+	}
 
-	return c, err
+	return c, nil
 }
 
 func (s UserService) CreateForgotPass(e string) (string, error) {
