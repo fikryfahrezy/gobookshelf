@@ -9,13 +9,25 @@ import (
 	"github.com/fikryfahrezy/gosrouter"
 )
 
-type image struct {
+type imageResponse struct {
 	Id   string `json:"id"`
 	Name string `json:"name"`
 }
 
-type imagesResponse struct {
-	images []image
+func mapImgCmdToResponse(i application.GalleryResCommand) imageResponse {
+	ir := imageResponse{
+		Id:   i.Id,
+		Name: i.Name,
+	}
+	return ir
+}
+
+func mapImgCmdsToResponses(i []application.GalleryResCommand) []imageResponse {
+	is := make([]imageResponse, len(i))
+	for i, v := range i {
+		is[i] = mapImgCmdToResponse(v)
+	}
+	return is
 }
 
 type GalleriesResource struct {
@@ -26,7 +38,6 @@ func (g GalleriesResource) Post(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(1024)
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
-
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
@@ -34,7 +45,6 @@ func (g GalleriesResource) Post(w http.ResponseWriter, r *http.Request) {
 	f, fh, err := r.FormFile("image")
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
-
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
@@ -45,7 +55,6 @@ func (g GalleriesResource) Post(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
-
 		handler.ResJSON(w, http.StatusInternalServerError, res.Response())
 		return
 	}
@@ -58,14 +67,7 @@ func (g GalleriesResource) Get(w http.ResponseWriter, r *http.Request) {
 	handler.AllowCORS(&w)
 
 	imgs := g.Service.GetAllImages()
-	ir := imagesResponse{images: make([]image, len(imgs))}
-	for i, img := range imgs {
-		ir.images[i] = image{
-			Id:   img.Id,
-			Name: img.Name,
-		}
-	}
-
+	ir := mapImgCmdsToResponses(imgs)
 	res := handler.CommonResponse{Message: "", Data: ir}
 	handler.ResJSON(w, http.StatusOK, res.Response())
 }

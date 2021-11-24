@@ -14,8 +14,8 @@ import (
 	books_http "github.com/fikryfahrezy/gobookshelf/books/interfaces/http"
 )
 
-func createBook(id string) books.BookModel {
-	b := books.BookModel{
+func createBook(id string) books.Book {
+	b := books.Book{
 		id,
 		"Name",
 		1234,

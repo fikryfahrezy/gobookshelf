@@ -27,7 +27,7 @@ func TestUsers(t *testing.T) {
 
 	db.MigrateSqliteDB(sdb)
 
-	ur := user_repository.UserRepository{Users: make(map[string]users.UserModel)}
+	ur := user_repository.UserRepository{Users: make(map[string]users.User)}
 	fr := forgotpw.ForgotPassRepository{Db: sdb}
 	us := user_service.UserService{Ur: &ur, Fr: fr}
 	usr := user_http.UserRoutes{Us: us}
@@ -61,7 +61,7 @@ func TestUsers(t *testing.T) {
 		{
 			"Login Success",
 			func(r *http.Request) {
-				u := users.UserModel{
+				u := users.User{
 					Email:    "email@email2.com",
 					Password: "password",
 					Name:     "Name",
@@ -79,7 +79,7 @@ func TestUsers(t *testing.T) {
 		{
 			"Login Fail, Password Not Match",
 			func(r *http.Request) {
-				u := users.UserModel{
+				u := users.User{
 					Email:    "email@email3.com",
 					Password: "password",
 					Name:     "Name",
@@ -115,7 +115,7 @@ func TestUsers(t *testing.T) {
 		{
 			"Update Profile Success",
 			func(r *http.Request) {
-				u := users.UserModel{
+				u := users.User{
 					Id:       "1",
 					Email:    "email@email4.com",
 					Password: "password",
@@ -144,7 +144,7 @@ func TestUsers(t *testing.T) {
 		{
 			"Request Forgot Password Success",
 			func(r *http.Request) {
-				u := users.UserModel{
+				u := users.User{
 					Email:    "email@email5.com",
 					Password: "password",
 					Name:     "Name",
@@ -162,7 +162,7 @@ func TestUsers(t *testing.T) {
 		{
 			"Update Password Success",
 			func(r *http.Request) {
-				u := users.UserModel{
+				u := users.User{
 					Email:    "email@email6.com",
 					Password: "password",
 					Name:     "Name",
@@ -171,7 +171,7 @@ func TestUsers(t *testing.T) {
 				}
 				ur.Insert(u)
 
-				fp := users.ForgotPassModel{
+				fp := users.ForgotPass{
 					Id:        "1",
 					Email:     u.Email,
 					Code:      "1",

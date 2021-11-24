@@ -22,7 +22,7 @@ import (
 )
 
 func TestGalleries(t *testing.T) {
-	gli := galleries_infra.ImageRepository{Images: make(map[string]galleries.GalleryModel)}
+	gli := galleries_infra.ImageRepository{Images: make(map[string]galleries.Gallery)}
 	gls := galleries_app.GalleryService{Gr: &gli}
 	glr := galleries_http.GalleriesResource{Service: gls}
 	galleries_http.AddRoutes(glr)

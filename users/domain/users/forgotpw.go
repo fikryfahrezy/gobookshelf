@@ -1,6 +1,6 @@
 package users
 
-type ForgotPassModel struct {
+type ForgotPass struct {
 	Id        string
 	Email     string
 	Code      string

@@ -8,11 +8,11 @@ import (
 )
 
 type ImageRepository struct {
-	Images map[string]galleries.GalleryModel
+	Images map[string]galleries.Gallery
 	Lock   sync.RWMutex
 }
 
-func (idb *ImageRepository) Insert(im galleries.GalleryModel) galleries.GalleryModel {
+func (idb *ImageRepository) Insert(im galleries.Gallery) galleries.Gallery {
 	idb.Lock.Lock()
 	defer idb.Lock.Unlock()
 
@@ -23,11 +23,11 @@ func (idb *ImageRepository) Insert(im galleries.GalleryModel) galleries.GalleryM
 	return im
 }
 
-func (idb *ImageRepository) ReadAll() []galleries.GalleryModel {
+func (idb *ImageRepository) ReadAll() []galleries.Gallery {
 	idb.Lock.RLock()
 	defer idb.Lock.RUnlock()
 
-	ims := make([]galleries.GalleryModel, len(idb.Images))
+	ims := make([]galleries.Gallery, len(idb.Images))
 	i := 0
 
 	for _, v := range idb.Images {

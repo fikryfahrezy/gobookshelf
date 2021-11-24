@@ -7,9 +7,7 @@ import (
 
 	"github.com/fikryfahrezy/gosrouter"
 
-	"github.com/fikryfahrezy/gobookshelf/users/domain/users"
-
-	user_service "github.com/fikryfahrezy/gobookshelf/users/application"
+	"github.com/fikryfahrezy/gobookshelf/users/application"
 
 	"github.com/fikryfahrezy/gobookshelf/handler"
 )
@@ -106,7 +104,7 @@ func (ur *resetPassReq) Validate() error {
 	return nil
 }
 
-type UserView struct {
+type userResponse struct {
 	Id       string `json:"id"`
 	Email    string `json:"email"`
 	Password string `json:"-"`
@@ -115,16 +113,50 @@ type UserView struct {
 	Street   string `json:"street"`
 }
 
-func mapUser(um *users.UserModel, ur userReq) {
-	um.Email = ur.Email
-	um.Region = ur.Region
-	um.Street = ur.Street
-	um.Name = ur.Name
-	um.Password = ur.Password
+func mapUserReqToCmd(ur userReq) application.UserReqCommand {
+	u := application.UserReqCommand{
+		Email:    ur.Email,
+		Password: ur.Region,
+		Name:     ur.Name,
+		Region:   ur.Region,
+		Street:   ur.Street,
+	}
+
+	return u
+}
+
+func mapUserResCmdToRes(us application.UserResCommand) userResponse {
+	u := userResponse{
+		Id:     us.Id,
+		Email:  us.Email,
+		Name:   us.Name,
+		Region: us.Region,
+		Street: us.Street,
+	}
+
+	return u
+}
+
+type ForgotPwResponse struct {
+	Id        string
+	Email     string
+	Code      string
+	IsClaimed bool
+}
+
+func mapForgotPwResCmdToRes(f application.ForgotPwResCommand) ForgotPwResponse {
+	r := ForgotPwResponse{
+		Id:        f.Id,
+		Email:     f.Email,
+		Code:      f.Code,
+		IsClaimed: f.IsClaimed,
+	}
+
+	return r
 }
 
 type UserRoutes struct {
-	Us user_service.UserService
+	Us application.UserService
 }
 
 func (s *UserRoutes) Registration(w http.ResponseWriter, r *http.Request) {
@@ -132,7 +164,6 @@ func (s *UserRoutes) Registration(w http.ResponseWriter, r *http.Request) {
 	errDcd := handler.DecodeJSONBody(w, r, &u)
 	if errDcd != nil {
 		res := handler.CommonResponse{Message: errDcd.Error(), Data: ""}
-
 		handler.ResJSON(w, errDcd.Status, res.Response())
 		return
 	}
@@ -140,24 +171,18 @@ func (s *UserRoutes) Registration(w http.ResponseWriter, r *http.Request) {
 	err := u.RegValidate()
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
-
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
 
-	nu := users.UserModel{}
-	mapUser(&nu, u)
-
-	ur, err := s.Us.CreateUser(nu)
+	ur, err := s.Us.CreateUser(mapUserReqToCmd(u))
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
-
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
 
 	res := handler.CommonResponse{Message: "", Data: ur.Id}
-
 	handler.ResJSON(w, http.StatusCreated, res.Response())
 }
 
@@ -166,7 +191,6 @@ func (s *UserRoutes) Login(w http.ResponseWriter, r *http.Request) {
 	errDcd := handler.DecodeJSONBody(w, r, &u)
 	if errDcd != nil {
 		res := handler.CommonResponse{Message: errDcd.Error(), Data: ""}
-
 		handler.ResJSON(w, errDcd.Status, res.Response())
 		return
 	}
@@ -174,7 +198,6 @@ func (s *UserRoutes) Login(w http.ResponseWriter, r *http.Request) {
 	err := u.Validate()
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
-
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
@@ -182,13 +205,12 @@ func (s *UserRoutes) Login(w http.ResponseWriter, r *http.Request) {
 	ur, err := s.Us.GetUser(u.Email, u.Password)
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
-
 		handler.ResJSON(w, http.StatusUnauthorized, res.Response())
 		return
 	}
 
-	res := handler.CommonResponse{Message: "", Data: ur.Id}
-
+	ures := mapUserResCmdToRes(ur)
+	res := handler.CommonResponse{Message: "", Data: ures.Id}
 	handler.ResJSON(w, http.StatusOK, res)
 }
 
@@ -197,7 +219,6 @@ func (s *UserRoutes) GetProfile(w http.ResponseWriter, r *http.Request) {
 
 	if c == "" {
 		res := handler.CommonResponse{Message: http.StatusText(http.StatusUnauthorized), Data: ""}
-
 		handler.ResJSON(w, http.StatusUnauthorized, res.Response())
 		return
 	}
@@ -205,13 +226,12 @@ func (s *UserRoutes) GetProfile(w http.ResponseWriter, r *http.Request) {
 	ur, err := s.Us.GetUserById(c)
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
-
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
 
-	res := handler.CommonResponse{Message: "", Data: ur}
-
+	ures := mapUserResCmdToRes(ur)
+	res := handler.CommonResponse{Message: "", Data: ures}
 	handler.ResJSON(w, http.StatusOK, res.Response())
 }
 
@@ -220,7 +240,6 @@ func (s *UserRoutes) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	errDcd := handler.DecodeJSONBody(w, r, &u)
 	if errDcd != nil {
 		res := handler.CommonResponse{Message: errDcd.Error(), Data: ""}
-
 		handler.ResJSON(w, errDcd.Status, res.Response())
 		return
 	}
@@ -228,7 +247,6 @@ func (s *UserRoutes) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	err := u.UpValidate()
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
-
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
@@ -236,24 +254,19 @@ func (s *UserRoutes) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	c := r.Header.Get("authorization")
 	if c == "" {
 		res := handler.CommonResponse{Message: http.StatusText(http.StatusUnauthorized), Data: ""}
-
 		handler.ResJSON(w, http.StatusUnauthorized, res.Response())
 		return
 	}
 
-	nu := users.UserModel{}
-	mapUser(&nu, u)
-
-	ur, err := s.Us.UpdateUser(c, nu)
+	ur, err := s.Us.UpdateUser(c, mapUserReqToCmd(u))
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
-
 		handler.ResJSON(w, http.StatusNotFound, res.Response())
 		return
 	}
 
-	res := handler.CommonResponse{Message: "", Data: ur.Id}
-
+	ures := mapUserResCmdToRes(ur)
+	res := handler.CommonResponse{Message: "", Data: ures.Id}
 	handler.ResJSON(w, http.StatusOK, res.Response())
 }
 
@@ -262,7 +275,6 @@ func (s *UserRoutes) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	errDcd := handler.DecodeJSONBody(w, r, &u)
 	if errDcd != nil {
 		res := handler.CommonResponse{Message: errDcd.Error(), Data: ""}
-
 		handler.ResJSON(w, errDcd.Status, res.Response())
 		return
 	}
@@ -270,22 +282,18 @@ func (s *UserRoutes) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	err := u.Validate()
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
-
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
 
 	_, err = s.Us.CreateForgotPass(u.Email)
-
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
-
 		handler.ResJSON(w, http.StatusInternalServerError, res.Response())
 		return
 	}
 
 	res := handler.CommonResponse{Message: "", Data: "Hi"}
-
 	handler.ResJSON(w, http.StatusOK, res.Response())
 }
 
@@ -296,13 +304,11 @@ func (s *UserRoutes) GetForgotPassword(w http.ResponseWriter, r *http.Request) {
 	f, err := s.Us.GetForgotPass(c)
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
-
 		handler.ResJSON(w, http.StatusInternalServerError, res.Response())
 		return
 	}
 
-	res := handler.CommonResponse{Message: "", Data: f}
-
+	res := handler.CommonResponse{Message: "", Data: mapForgotPwResCmdToRes(f)}
 	handler.ResJSON(w, http.StatusOK, res.Response())
 }
 
@@ -311,7 +317,6 @@ func (s *UserRoutes) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	errDcd := handler.DecodeJSONBody(w, r, &u)
 	if errDcd != nil {
 		res := handler.CommonResponse{Message: errDcd.Error(), Data: ""}
-
 		handler.ResJSON(w, errDcd.Status, res.Response())
 		return
 	}
@@ -319,7 +324,6 @@ func (s *UserRoutes) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	err := u.Validate()
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
-
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
@@ -327,13 +331,12 @@ func (s *UserRoutes) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	nfpM, err := s.Us.UpdateForgotPass(u.Code, u.Password)
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
-
 		handler.ResJSON(w, http.StatusInternalServerError, res.Response())
 		return
 	}
 
-	res := handler.CommonResponse{Message: "", Data: nfpM.Id}
-
+	f := mapForgotPwResCmdToRes(nfpM)
+	res := handler.CommonResponse{Message: "", Data: f.Id}
 	handler.ResJSON(w, http.StatusOK, res.Response())
 }
 

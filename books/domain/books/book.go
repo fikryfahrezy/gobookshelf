@@ -1,6 +1,6 @@
 package books
 
-type BookModel struct {
+type Book struct {
 	Id         string
 	Name       string
 	Year       int

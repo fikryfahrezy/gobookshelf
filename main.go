@@ -62,7 +62,7 @@ func main() {
 	pr := pages_http.PagesResource{Host: "http://localhost:3000", Service: pa, Session: ps, Template: templates}
 	pages_http.AddRoutes(pr)
 
-	ur := user_infra.UserRepository{Users: make(map[string]users.UserModel)}
+	ur := user_infra.UserRepository{Users: make(map[string]users.User)}
 	fr := forgotpw.ForgotPassRepository{Db: sqliteDb}
 	us := user_service.UserService{Ur: &ur, Fr: fr}
 	usr := user_http.UserRoutes{Us: us}
@@ -74,7 +74,7 @@ func main() {
 	gr := geocodings_http.GeocodingsResource{Service: gs}
 	geocodings_http.AddRoutes(gr)
 
-	gli := galleries_infra.ImageRepository{Images: make(map[string]galleries.GalleryModel)}
+	gli := galleries_infra.ImageRepository{Images: make(map[string]galleries.Gallery)}
 	gls := galleries_app.GalleryService{Gr: &gli}
 	glr := galleries_http.GalleriesResource{Service: gls}
 	galleries_http.AddRoutes(glr)

@@ -4,6 +4,72 @@ import (
 	"github.com/fikryfahrezy/gobookshelf/pages/domain/pages"
 )
 
+type UserReqCommand struct {
+	Email    string
+	Password string
+	Name     string
+	Region   string
+	Street   string
+}
+
+func mapUserCmdToEntity(u UserReqCommand) pages.User {
+	us := pages.User{
+		Email:    u.Email,
+		Password: u.Password,
+		Name:     u.Name,
+		Region:   u.Region,
+		Street:   u.Street,
+	}
+	return us
+}
+
+type UserResCommand struct {
+	Email    string
+	Password string
+	Name     string
+	Region   string
+	Street   string
+}
+
+func mapUserEntityToResCmd(u pages.User) UserResCommand {
+	us := UserResCommand{
+		Email:    u.Email,
+		Password: u.Password,
+		Name:     u.Name,
+		Region:   u.Region,
+		Street:   u.Street,
+	}
+	return us
+}
+
+type LoginCommand struct {
+	Email    string
+	Password string
+}
+
+func mapLoginCmdToEntity(l LoginCommand) pages.Auth {
+	a := pages.Auth(l)
+	return a
+}
+
+type ForgotPassResCommand struct {
+	Id        int
+	Email     string
+	Code      string
+	IsClaimed bool
+}
+
+func mapForgotPassEntityToResCmd(f pages.ForgotPass) ForgotPassResCommand {
+	c := ForgotPassResCommand{
+		Id:        f.Id,
+		Email:     f.Email,
+		Code:      f.Code,
+		IsClaimed: f.IsClaimed,
+	}
+
+	return c
+}
+
 type userService interface {
 	Registration(u pages.User) (string, error)
 	Login(u pages.Auth) (string, error)
@@ -20,34 +86,14 @@ type bookService interface {
 	GetBooks(q string) (interface{}, error)
 }
 
-type UserCommand struct {
-	Email    string
-	Password string
-	Name     string
-	Region   string
-	Street   string
-}
-
-type LoginCommand struct {
-	Email    string
-	Password string
-}
-
 type PagesService struct {
 	UserService    userService
 	GalleryService galleryService
 	BookService    bookService
 }
 
-func (p PagesService) Registration(u UserCommand) (string, error) {
-	us := pages.User{
-		Name:     u.Name,
-		Email:    u.Email,
-		Password: u.Password,
-		Region:   u.Region,
-		Street:   u.Street,
-	}
-	d, err := p.UserService.Registration(us)
+func (p PagesService) Registration(u UserReqCommand) (string, error) {
+	d, err := p.UserService.Registration(mapUserCmdToEntity(u))
 	if err != nil {
 		return "", err
 	}
@@ -56,8 +102,7 @@ func (p PagesService) Registration(u UserCommand) (string, error) {
 }
 
 func (p PagesService) Login(u LoginCommand) (string, error) {
-	a := pages.Auth(u)
-	d, err := p.UserService.Login(a)
+	d, err := p.UserService.Login(mapLoginCmdToEntity(u))
 	if err != nil {
 		return "", err
 	}
@@ -65,15 +110,8 @@ func (p PagesService) Login(u LoginCommand) (string, error) {
 	return d, nil
 }
 
-func (p PagesService) UpdateAcc(a string, u UserCommand) (string, error) {
-	us := pages.User{
-		Name:     u.Name,
-		Email:    u.Email,
-		Password: u.Password,
-		Region:   u.Region,
-		Street:   u.Street,
-	}
-	d, err := p.UserService.UpdateAcc(a, us)
+func (p PagesService) UpdateAcc(a string, u UserReqCommand) (string, error) {
+	d, err := p.UserService.UpdateAcc(a, mapUserCmdToEntity(u))
 	if err != nil {
 		return "", err
 	}
@@ -81,22 +119,24 @@ func (p PagesService) UpdateAcc(a string, u UserCommand) (string, error) {
 	return d, nil
 }
 
-func (p PagesService) GetUser(a string) (pages.User, error) {
+func (p PagesService) GetUser(a string) (UserResCommand, error) {
 	u, err := p.UserService.GetUser(a)
 	if err != nil {
-		return pages.User{}, err
+		return UserResCommand{}, err
 	}
 
-	return u, nil
+	c := mapUserEntityToResCmd(u)
+	return c, nil
 }
 
-func (p PagesService) GetForgotPassword(c string) (pages.ForgotPass, error) {
+func (p PagesService) GetForgotPassword(c string) (ForgotPassResCommand, error) {
 	s, err := p.UserService.GetForgotPassword(c)
 	if err != nil {
-		return s, err
+		return ForgotPassResCommand{}, err
 	}
 
-	return s, nil
+	f := mapForgotPassEntityToResCmd(s)
+	return f, nil
 
 }
 

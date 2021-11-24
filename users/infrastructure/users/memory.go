@@ -2,7 +2,6 @@ package users
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 
 	"github.com/fikryfahrezy/gobookshelf/common"
@@ -10,18 +9,18 @@ import (
 )
 
 type UserRepository struct {
-	Users map[string]users.UserModel
+	Users map[string]users.User
 	lock  sync.RWMutex
 }
 
-func (udb *UserRepository) Insert(u users.UserModel) (users.UserModel, error) {
+func (udb *UserRepository) Insert(u users.User) (users.User, error) {
 	udb.lock.Lock()
 	defer udb.lock.Unlock()
 
 	u.Id = common.RandString(7)
 	for _, v := range udb.Users {
 		if v.Email == u.Email {
-			return users.UserModel{}, errors.New("email already exist")
+			return users.User{}, errors.New("email already exist")
 		}
 	}
 
@@ -30,7 +29,7 @@ func (udb *UserRepository) Insert(u users.UserModel) (users.UserModel, error) {
 	return u, nil
 }
 
-func (udb *UserRepository) ReadByEmail(k string) (users.UserModel, error) {
+func (udb *UserRepository) ReadByEmail(k string) (users.User, error) {
 	udb.lock.RLock()
 	defer udb.lock.RUnlock()
 
@@ -40,10 +39,10 @@ func (udb *UserRepository) ReadByEmail(k string) (users.UserModel, error) {
 		}
 	}
 
-	return users.UserModel{}, errors.New("user not found")
+	return users.User{}, errors.New("user not found")
 }
 
-func (udb *UserRepository) ReadById(k string) (users.UserModel, error) {
+func (udb *UserRepository) ReadById(k string) (users.User, error) {
 	udb.lock.RLock()
 	defer udb.lock.RUnlock()
 
@@ -53,16 +52,16 @@ func (udb *UserRepository) ReadById(k string) (users.UserModel, error) {
 		}
 	}
 
-	return users.UserModel{}, errors.New(fmt.Sprintf("user not found %s", udb.Users))
+	return users.User{}, errors.New("user not found")
 }
 
-func (udb *UserRepository) Update(u users.UserModel) (users.UserModel, error) {
+func (udb *UserRepository) Update(u users.User) (users.User, error) {
 	udb.lock.Lock()
 	defer udb.lock.Unlock()
 
 	for _, v := range udb.Users {
 		if v.Email == u.Email && v.Id != u.Id {
-			return users.UserModel{}, errors.New("user not foundx")
+			return users.User{}, errors.New("user not foundx")
 		}
 	}
 
@@ -92,5 +91,5 @@ func (udb *UserRepository) Update(u users.UserModel) (users.UserModel, error) {
 		}
 	}
 
-	return users.UserModel{}, errors.New(fmt.Sprintf("user not foundy %s", u.Id))
+	return users.User{}, errors.New("user not found %s")
 }

@@ -1,6 +1,6 @@
 package galleries
 
-type GalleryModel struct {
+type Gallery struct {
 	Id   string
 	Name string
 }

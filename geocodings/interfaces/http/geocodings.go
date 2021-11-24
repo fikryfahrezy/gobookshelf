@@ -18,7 +18,6 @@ func (g GeocodingsResource) GetCountries(w http.ResponseWriter, r *http.Request)
 	q, err := handler.ReqQuery(r.URL.String())
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: make([]interface{}, 0)}
-
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
@@ -26,7 +25,6 @@ func (g GeocodingsResource) GetCountries(w http.ResponseWriter, r *http.Request)
 	res, err := g.Service.GetCountries(q("name"))
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: nil}
-
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
@@ -40,7 +38,6 @@ func (g GeocodingsResource) GetStreet(w http.ResponseWriter, r *http.Request) {
 	q, err := handler.ReqQuery(r.URL.String())
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: nil}
-
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
@@ -48,7 +45,6 @@ func (g GeocodingsResource) GetStreet(w http.ResponseWriter, r *http.Request) {
 	rg, s := q("region"), q("street")
 	if rg == "" || s == "" {
 		res := handler.CommonResponse{Message: "query needed", Data: nil}
-
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
@@ -56,7 +52,6 @@ func (g GeocodingsResource) GetStreet(w http.ResponseWriter, r *http.Request) {
 	res, err := g.Service.GetGeo(rg, s)
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: nil}
-
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}

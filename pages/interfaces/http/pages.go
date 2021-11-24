@@ -20,9 +20,28 @@ type UserdataRequest struct {
 	Street   string `json:"street"`
 }
 
+func mapUserReqToCmd(u UserdataRequest) application.UserReqCommand {
+	ur := application.UserReqCommand{
+		Email:    u.Email,
+		Password: u.Password,
+		Name:     u.Name,
+		Region:   u.Region,
+		Street:   u.Street,
+	}
+	return ur
+}
+
 type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+func mapLoginReqToCmd(l LoginRequest) application.LoginCommand {
+	lc := application.LoginCommand{
+		Email:    l.Email,
+		Password: l.Password,
+	}
+	return lc
 }
 
 type PagesResource struct {
@@ -41,30 +60,25 @@ func (p PagesResource) registration(w http.ResponseWriter, r *http.Request) {
 	errDcd := handler.DecodeJSONBody(w, r, &b)
 	if errDcd != nil {
 		res := handler.CommonResponse{Message: errDcd.Message, Data: ""}
-
 		handler.ResJSON(w, http.StatusBadRequest, res.Response())
 		return
 	}
 
-	cmd := application.UserCommand(b)
-	d, err := p.Service.Registration(cmd)
+	d, err := p.Service.Registration(mapUserReqToCmd(b))
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
-
 		handler.ResJSON(w, http.StatusBadRequest, res.Response())
 		return
 	}
 
 	if d == "" {
 		res := handler.CommonResponse{Message: "fail", Data: ""}
-
 		handler.ResJSON(w, http.StatusBadRequest, res.Response())
 		return
 	}
 
 	us := p.Session.Create(d)
 	res := handler.CommonResponse{Message: "", Data: d}
-
 	http.SetCookie(w, &http.Cookie{Name: "auth", Value: us, HttpOnly: true, Secure: true, SameSite: 3})
 	handler.ResJSON(w, http.StatusCreated, res.Response())
 }
@@ -74,30 +88,25 @@ func (p PagesResource) loginAcc(w http.ResponseWriter, r *http.Request) {
 	errDcd := handler.DecodeJSONBody(w, r, &b)
 	if errDcd != nil {
 		res := handler.CommonResponse{Message: errDcd.Message, Data: ""}
-
 		handler.ResJSON(w, http.StatusBadRequest, res.Response())
 		return
 	}
 
-	cmd := application.LoginCommand(b)
-	d, err := p.Service.Login(cmd)
+	d, err := p.Service.Login(mapLoginReqToCmd(b))
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
-
 		handler.ResJSON(w, http.StatusInternalServerError, res.Response())
 		return
 	}
 
 	if d == "" {
 		res := handler.CommonResponse{Message: "fail", Data: ""}
-
 		handler.ResJSON(w, http.StatusBadRequest, res.Response())
 		return
 	}
 
 	us := p.Session.Create(d)
 	res := handler.CommonResponse{Message: "", Data: d}
-
 	http.SetCookie(w, &http.Cookie{Name: "auth", Value: us, HttpOnly: true, Secure: true, SameSite: 3})
 	handler.ResJSON(w, http.StatusOK, res)
 }
@@ -107,7 +116,6 @@ func (p PagesResource) updateAcc(w http.ResponseWriter, r *http.Request) {
 	errDcd := handler.DecodeJSONBody(w, r, &b)
 	if errDcd != nil {
 		res := handler.CommonResponse{Message: errDcd.Message, Data: ""}
-
 		handler.ResJSON(w, http.StatusBadRequest, res.Response())
 		return
 	}
@@ -115,18 +123,14 @@ func (p PagesResource) updateAcc(w http.ResponseWriter, r *http.Request) {
 	c, err := r.Cookie("auth")
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: ""}
-
 		handler.ResJSON(w, http.StatusUnauthorized, res.Response())
 		return
 	}
 
 	uc := p.Session.Get(c.Value)
-	cmd := application.UserCommand(b)
-	d, err := p.Service.UpdateAcc(uc, cmd)
-
+	d, err := p.Service.UpdateAcc(uc, mapUserReqToCmd(b))
 	if d == "" {
 		res := handler.CommonResponse{Message: "fail", Data: ""}
-
 		handler.ResJSON(w, http.StatusBadRequest, res.Response())
 		return
 	}
@@ -168,6 +172,7 @@ func (p PagesResource) home(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
+
 	d := struct {
 		IsLogin bool
 		Books   interface{}
@@ -175,7 +180,6 @@ func (p PagesResource) home(w http.ResponseWriter, r *http.Request) {
 		isLogin,
 		b,
 	}
-
 	p.Template.ExecuteTemplate(w, "home.html", d)
 }
 
@@ -187,7 +191,6 @@ func (p PagesResource) register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	a := authTmpl{OauthURL: p.Host}
-
 	p.Template.ExecuteTemplate(w, "register.html", a)
 }
 
@@ -211,7 +214,6 @@ func (p PagesResource) login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	a := authTmpl{OauthURL: p.Host}
-
 	p.Template.ExecuteTemplate(w, "login.html", a)
 }
 
@@ -249,14 +251,12 @@ func (p PagesResource) resetPass(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cd := c("code")
-
 	if cd == "" {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 
 	fpm, err := p.Service.GetForgotPassword(cd)
-
 	if err != nil || fpm.IsClaimed {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
@@ -285,7 +285,6 @@ func (p PagesResource) gallery(w http.ResponseWriter, r *http.Request) {
 		isLogin,
 		im,
 	}
-
 	p.Template.ExecuteTemplate(w, "gallery.html", d)
 }
 

@@ -1,4 +1,4 @@
-package users
+package application
 
 import (
 	"errors"
@@ -13,55 +13,119 @@ import (
 	"github.com/fikryfahrezy/gobookshelf/common"
 )
 
+type UserReqCommand struct {
+	Id       string
+	Email    string
+	Password string
+	Name     string
+	Region   string
+	Street   string
+}
+
+type UserResCommand struct {
+	Id       string
+	Email    string
+	Password string
+	Name     string
+	Region   string
+	Street   string
+}
+
+func mapUserReqCmdToEntity(u UserReqCommand) users.User {
+	nu := users.User{
+		Id:       u.Id,
+		Email:    u.Name,
+		Password: u.Password,
+		Name:     u.Name,
+		Region:   u.Region,
+		Street:   u.Street,
+	}
+	return nu
+}
+
+func mapUserEntityToResCmd(eu users.User) UserResCommand {
+	ur := UserResCommand{
+		Id:       eu.Id,
+		Email:    eu.Email,
+		Password: eu.Password,
+		Name:     eu.Name,
+		Region:   eu.Region,
+		Street:   eu.Street,
+	}
+	return ur
+}
+
+type ForgotPwResCommand struct {
+	Id        string
+	Email     string
+	Code      string
+	IsClaimed bool
+}
+
+func mapForgotPwEntityToRes(u users.ForgotPass) ForgotPwResCommand {
+	f := ForgotPwResCommand{
+		Id:        u.Id,
+		Email:     u.Email,
+		Code:      u.Code,
+		IsClaimed: u.IsClaimed,
+	}
+
+	return f
+}
+
 type UserService struct {
 	Ur *user_repository.UserRepository
 	Fr forgotpw_repository.ForgotPassRepository
 }
 
-func (s UserService) CreateUser(nu users.UserModel) (users.UserModel, error) {
-	cu, err := s.Ur.Insert(nu)
+func (s UserService) CreateUser(nu UserReqCommand) (UserResCommand, error) {
+	cu, err := s.Ur.Insert(mapUserReqCmdToEntity(nu))
 	if err != nil {
-		return users.UserModel{}, err
+		return UserResCommand{}, err
 	}
 
-	return cu, nil
+	rc := mapUserEntityToResCmd(cu)
+	return rc, nil
 }
 
-func (s UserService) GetUser(e, p string) (users.UserModel, error) {
+func (s UserService) GetUser(e, p string) (UserResCommand, error) {
 	us, err := s.Ur.ReadByEmail(e)
 	if err != nil {
-		return users.UserModel{}, err
+		return UserResCommand{}, err
 	}
 
 	if us.Password != p {
-		return users.UserModel{}, errors.New("wrong credential")
+		return UserResCommand{}, errors.New("wrong credential")
 	}
 
-	return us, nil
+	rc := mapUserEntityToResCmd(us)
+	return rc, nil
 }
 
-func (s UserService) GetUserById(k string) (users.UserModel, error) {
+func (s UserService) GetUserById(k string) (UserResCommand, error) {
 	us, err := s.Ur.ReadById(k)
 	if err != nil {
-		return users.UserModel{}, err
+		return UserResCommand{}, err
 	}
 
-	return us, nil
+	rc := mapUserEntityToResCmd(us)
+	return rc, nil
 }
 
-func (s *UserService) UpdateUser(k string, u users.UserModel) (users.UserModel, error) {
+func (s *UserService) UpdateUser(k string, u UserReqCommand) (UserResCommand, error) {
 	c, err := s.Ur.ReadById(k)
 	if err != nil {
-		return users.UserModel{}, err
+		return UserResCommand{}, err
 	}
 
 	u.Id = c.Id
-	c, err = s.Ur.Update(u)
+	c, err = s.Ur.Update(mapUserReqCmdToEntity(u))
 	if err != nil {
-		return users.UserModel{}, err
+		return UserResCommand{}, err
 	}
 
-	return c, nil
+	rc := mapUserEntityToResCmd(c)
+	return rc, nil
 }
 
 func (s UserService) CreateForgotPass(e string) (string, error) {
@@ -71,7 +135,7 @@ func (s UserService) CreateForgotPass(e string) (string, error) {
 	}
 
 	code := common.RandString(15)
-	fpM := users.ForgotPassModel{Email: e, Code: code}
+	fpM := users.ForgotPass{Email: e, Code: code}
 	from := "email@email.com"
 	// msg := fmt.Sprintf(`
 	// 	Code: %s
@@ -93,34 +157,35 @@ func (s UserService) CreateForgotPass(e string) (string, error) {
 	return "", nil
 }
 
-func (s UserService) GetForgotPass(c string) (users.ForgotPassModel, error) {
-	f, err := s.Fr.ReadByCode(c)
+func (s UserService) GetForgotPass(c string) (ForgotPwResCommand, error) {
+	u, err := s.Fr.ReadByCode(c)
 	if err != nil {
-		return users.ForgotPassModel{}, err
+		return ForgotPwResCommand{}, err
 	}
 
+	f := mapForgotPwEntityToRes(u)
 	return f, nil
 }
 
-func (s UserService) UpdateForgotPass(cd, p string) (users.ForgotPassModel, error) {
+func (s UserService) UpdateForgotPass(cd, p string) (ForgotPwResCommand, error) {
 	c, err := s.Fr.ReadByCode(cd)
 	if err != nil {
-		return users.ForgotPassModel{}, err
+		return ForgotPwResCommand{}, err
 	}
 	c.IsClaimed = true
 
 	nfpM, err := s.Fr.Update(c)
 	if err != nil {
-		return users.ForgotPassModel{}, err
+		return ForgotPwResCommand{}, err
 	}
 
 	u, err := s.Ur.ReadByEmail(nfpM.Email)
 	if err != nil {
-		return users.ForgotPassModel{}, err
+		return ForgotPwResCommand{}, err
 	}
 
 	u.Password = p
 	u, err = s.Ur.Update(u)
-
-	return nfpM, err
+	f := mapForgotPwEntityToRes(nfpM)
+	return f, err
 }

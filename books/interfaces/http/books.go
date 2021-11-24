@@ -4,8 +4,6 @@ import (
 	"errors"
 	"net/http"
 
-	book_domain "github.com/fikryfahrezy/gobookshelf/books/domain/books"
-
 	"github.com/fikryfahrezy/gosrouter"
 
 	"github.com/fikryfahrezy/gobookshelf/books/application"
@@ -106,32 +104,43 @@ func (b *bookSerializer) Response() bookSerializer {
 	return *b
 }
 
-func mapBook(ob *book_domain.BookModel, nb bookReq) {
-	ob.Name = nb.Name
-	ob.Year = nb.Year
-	ob.Author = nb.Author
-	ob.Summary = nb.Summary
-	ob.Publisher = nb.Publisher
-	ob.PageCount = nb.PageCount
-	ob.ReadPage = nb.ReadPage
-	ob.Reading = nb.Reading
-	ob.Finished = nb.ReadPage == nb.PageCount
+func mapBookReqToCmd(nb bookReq) application.BookReqCommand {
+	ob := application.BookReqCommand{
+		Name:      nb.Name,
+		Year:      nb.Year,
+		Author:    nb.Author,
+		Summary:   nb.Summary,
+		Publisher: nb.Publisher,
+		PageCount: nb.PageCount,
+		ReadPage:  nb.ReadPage,
+		Finished:  nb.ReadPage == nb.PageCount,
+		Reading:   nb.Reading,
+	}
+	return ob
 }
 
-func mapBookResponse(ob *bookResponse, nb book_domain.BookModel) {
-	ob.Id = nb.Id
-	ob.Name = nb.Name
-	ob.Year = nb.Year
-	ob.Author = nb.Author
-	ob.Summary = nb.Summary
-	ob.Publisher = nb.Publisher
-	ob.PageCount = nb.PageCount
-	ob.ReadPage = nb.ReadPage
-	ob.Finished = nb.Finished
-	ob.Reading = nb.Reading
-	ob.IsDeleted = nb.IsDeleted
-	ob.InsertedAt = nb.InsertedAt
-	ob.UpdatedAt = nb.UpdatedAt
+func mapBookCmdToResponse(ob application.BookResCommand) bookResponse {
+	nb := bookResponse{
+		Id:         ob.Id,
+		Name:       ob.Name,
+		Year:       ob.Year,
+		Author:     ob.Author,
+		Summary:    ob.Summary,
+		Publisher:  ob.Summary,
+		PageCount:  ob.PageCount,
+		ReadPage:   ob.ReadPage,
+		Finished:   ob.Finished,
+		Reading:    ob.Reading,
+		IsDeleted:  ob.IsDeleted,
+		InsertedAt: ob.InsertedAt,
+		UpdatedAt:  ob.UpdatedAt,
+	}
+	return nb
+}
+
+func mapQueryToBookQueryCmd(n, r, f string) application.BookQueryCommand {
+	q := application.BookQueryCommand{n, r, f}
+	return q
 }
 
 type BookResource struct {
@@ -143,7 +152,6 @@ func (br BookResource) Post(w http.ResponseWriter, r *http.Request) {
 	errDcd := handler.DecodeJSONBody(w, r, &b)
 	if errDcd != nil {
 		res := handler.CommonResponse{Message: errDcd.Error(), Data: nil}
-
 		handler.ResJSON(w, errDcd.Status, res.Response())
 		return
 	}
@@ -151,17 +159,13 @@ func (br BookResource) Post(w http.ResponseWriter, r *http.Request) {
 	err := b.Validate()
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: nil}
-
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
 
-	var bm book_domain.BookModel
-	mapBook(&bm, b)
-	nb := br.Service.SaveBook(bm)
+	nb := br.Service.SaveBook(mapBookReqToCmd(b))
 	bi := bookIdResponse{nb.Id}
 	res := handler.CommonResponse{Message: "Book successfully added", Data: bi.Response()}
-
 	handler.ResJSON(w, http.StatusCreated, res.Response())
 }
 
@@ -171,20 +175,18 @@ func (br BookResource) GetAll(w http.ResponseWriter, r *http.Request) {
 	q, err := handler.ReqQuery(r.URL.String())
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: make([]interface{}, 0)}
-
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
 
-	bq := application.GetBookQuery{q("name"), q("reading"), q("finished")}
-	b := br.Service.GetBooks(bq)
+	b := br.Service.GetBooks(mapQueryToBookQueryCmd(q("name"), q("reading"), q("finished")))
 	bs := make([]bookResponse, len(b))
 	for i, bi := range b {
-		mapBookResponse(&bs[i], bi)
+		bs[i] = mapBookCmdToResponse(bi)
 	}
+
 	bt := booksSerializer{bs}
 	res := handler.CommonResponse{Message: "", Data: bt.Response()}
-
 	handler.ResJSON(w, http.StatusOK, res.Response())
 }
 
@@ -194,7 +196,6 @@ func (br BookResource) GetOne(w http.ResponseWriter, r *http.Request) {
 
 	if id == "" {
 		res := handler.CommonResponse{Message: "Not Found", Data: nil}
-
 		handler.ResJSON(w, http.StatusNotFound, res.Response())
 		return
 	}
@@ -207,11 +208,8 @@ func (br BookResource) GetOne(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var bz bookResponse
-	mapBookResponse(&bz, b)
-	bs := bookSerializer{bz}
+	bs := bookSerializer{Book: mapBookCmdToResponse(b)}
 	res := handler.CommonResponse{Message: "", Data: bs.Response()}
-
 	handler.ResJSON(w, http.StatusOK, res.Response())
 }
 
@@ -220,7 +218,6 @@ func (br BookResource) Put(w http.ResponseWriter, r *http.Request) {
 	errDcd := handler.DecodeJSONBody(w, r, &b)
 	if errDcd != nil {
 		res := handler.CommonResponse{Message: errDcd.Error(), Data: nil}
-
 		handler.ResJSON(w, errDcd.Status, res.Response())
 		return
 	}
@@ -228,7 +225,6 @@ func (br BookResource) Put(w http.ResponseWriter, r *http.Request) {
 	err := b.Validate()
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: nil}
-
 		handler.ResJSON(w, http.StatusUnprocessableEntity, res.Response())
 		return
 	}
@@ -238,26 +234,19 @@ func (br BookResource) Put(w http.ResponseWriter, r *http.Request) {
 
 	if id == "" {
 		res := handler.CommonResponse{Message: "Not Found", Data: nil}
-
 		handler.ResJSON(w, http.StatusNotFound, res.Response())
 		return
 	}
 
-	var bm book_domain.BookModel
-	mapBook(&bm, b)
-	nb, err := br.Service.UpdateBook(id, bm)
+	nb, err := br.Service.UpdateBook(id, mapBookReqToCmd(b))
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: nil}
-
 		handler.ResJSON(w, http.StatusNotFound, res.Response())
 		return
 	}
 
-	var bz bookResponse
-	mapBookResponse(&bz, nb)
-	bs := bookSerializer{bz}
+	bs := bookSerializer{Book: mapBookCmdToResponse(nb)}
 	res := handler.CommonResponse{Message: "Book successfully updated", Data: bs.Response()}
-
 	handler.ResJSON(w, http.StatusOK, res.Response())
 }
 
@@ -267,7 +256,6 @@ func (br BookResource) Delete(w http.ResponseWriter, r *http.Request) {
 
 	if id == "" {
 		res := handler.CommonResponse{Message: "Not Found", Data: nil}
-
 		handler.ResJSON(w, http.StatusNotFound, res.Response())
 		return
 	}
@@ -275,16 +263,12 @@ func (br BookResource) Delete(w http.ResponseWriter, r *http.Request) {
 	ob, err := br.Service.DeleteBook(id)
 	if err != nil {
 		res := handler.CommonResponse{Message: err.Error(), Data: nil}
-
 		handler.ResJSON(w, http.StatusNotFound, res.Response())
 		return
 	}
 
-	var bz bookResponse
-	mapBookResponse(&bz, ob)
-	bs := bookSerializer{bz}
+	bs := bookSerializer{Book: mapBookCmdToResponse(ob)}
 	res := handler.CommonResponse{Message: "Book successfully deleted", Data: bs.Response()}
-
 	handler.ResJSON(w, http.StatusOK, res.Response())
 }
 

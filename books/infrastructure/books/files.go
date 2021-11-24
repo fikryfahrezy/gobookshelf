@@ -101,7 +101,7 @@ func (r FileRepository) Rewrite(v interface{}) {
 	r.WriteFile(b)
 }
 
-func (r FileRepository) Save(b books.BookModel) books.BookModel {
+func (r FileRepository) Save(b books.Book) books.Book {
 	t := time.Now().UTC().String()
 	b.Id = common.RandString(5)
 	b.InsertedAt = t
@@ -112,8 +112,8 @@ func (r FileRepository) Save(b books.BookModel) books.BookModel {
 	return b
 }
 
-func (r FileRepository) Update(nb books.BookModel) (books.BookModel, error) {
-	var ob books.BookModel
+func (r FileRepository) Update(nb books.Book) (books.Book, error) {
+	var ob books.Book
 	bs := r.GetAllBooks()
 	ci := -1
 
@@ -144,10 +144,10 @@ func (r FileRepository) Update(nb books.BookModel) (books.BookModel, error) {
 		return ob, nil
 	}
 
-	return books.BookModel{}, errors.New("not found")
+	return books.Book{}, errors.New("not found")
 }
 
-func (r FileRepository) Delete(id string) (books.BookModel, error) {
+func (r FileRepository) Delete(id string) (books.Book, error) {
 	bs := r.GetAllBooks()
 
 	for i, v := range bs {
@@ -158,21 +158,21 @@ func (r FileRepository) Delete(id string) (books.BookModel, error) {
 		}
 	}
 
-	return books.BookModel{}, errors.New("not found")
+	return books.Book{}, errors.New("not found")
 }
 
-func (r FileRepository) GetAllBooks() []books.BookModel {
-	var b []books.BookModel
+func (r FileRepository) GetAllBooks() []books.Book {
+	var b []books.Book
 	r.Read(&b)
 
 	return b
 }
 
-func (r FileRepository) GetSelectedBooks(q GetBookQuery) []books.BookModel {
-	var b []books.BookModel
+func (r FileRepository) GetSelectedBooks(q GetBookQuery) []books.Book {
+	var b []books.Book
 	r.Read(&b)
 
-	var nb []books.BookModel
+	var nb []books.Book
 	n, f, d := q.Name, q.Finished, q.Reading
 
 	for _, v := range b {
