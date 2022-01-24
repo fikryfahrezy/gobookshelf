@@ -2,7 +2,6 @@ const dialogBtn = document.getElementById('dialog-button');
 const dialog = document.getElementById('dialog');
 const form = document.getElementById('form');
 const cancelDialogBtn = document.getElementById('cancel-dialog');
-const submitBtn = document.getElementById('submit-btn');
 
 const toogleDialog = function toogleDialog() {
   dialog.classList.toggle('none');
