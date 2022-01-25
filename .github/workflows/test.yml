@@ -40,4 +40,5 @@ jobs:
           echo "machine git.heroku.com" >> ~/.netrc
           echo "  login $HEROKU_EMAIL" >> ~/.netrc
           echo "  password $HEROKU_API_KEY" >> ~/.netrc
+          git fetch --all --unshallow
           git push heroku main
