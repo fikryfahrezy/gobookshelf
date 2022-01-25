@@ -32,6 +32,8 @@ jobs:
           HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
         run: |
           curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
+          ls -a
+          git init
           heroku git:remote -a testgobookshelf
           touch ~/.netrc
           echo "machine api.heroku.com" >> ~/.netrc
@@ -40,5 +42,4 @@ jobs:
           echo "machine git.heroku.com" >> ~/.netrc
           echo "  login $HEROKU_EMAIL" >> ~/.netrc
           echo "  password $HEROKU_API_KEY" >> ~/.netrc
-          git fetch --all --unshallow
           git push heroku main
