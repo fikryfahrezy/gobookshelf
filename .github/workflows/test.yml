@@ -8,30 +8,37 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout go
-        uses: actions/checkout@v2
+#       - name: Checkout go
+#         uses: actions/checkout@v2
 
-      - name: Setup go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.16.x
+#       - name: Setup go
+#         uses: actions/setup-go@v2
+#         with:
+#           go-version: 1.16.x
 
-      - name: Build
-        run: go build .
-        env:
-          GOPROXY: 'https://proxy.golang.org'
+#       - name: Build
+#         run: go build .
+#         env:
+#           GOPROXY: 'https://proxy.golang.org'
 
-      - name: Test
-        run: go test ./...
-        env:
-          GOPROXY: 'https://proxy.golang.org'
+#       - name: Test
+#         run: go test ./...
+#         env:
+#           GOPROXY: 'https://proxy.golang.org'
+      
+#       - name: Setup
+#         run: curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
           
       - name: Deploy
         env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
           REPO_HEROKU_API_KEY: ${{ secrets.REPO_HEROKU_API_KEY }}
-        run: |
-          curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
-          echo "$HEROKU_API_KEY"
-          echo "$REPO_HEROKU_API_KEY"
+        run: echo "$REPO_HEROKU_API_KEY"
           
+  deploy:
+    runs-on: ubuntu-latest
+    environment: HEROKU
+    steps:
+      - name: Deploy 2
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: echo "$HEROKU_API_KEY"
