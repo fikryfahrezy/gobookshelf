@@ -29,7 +29,15 @@ jobs:
       - name: Deploy
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
         run: |
           curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
           heroku git:remote -a testgobookshelf
+          touch ~/.netrc
+          echo "machine api.heroku.com" >> ~/.netrc
+          echo "  login $HEROKU_EMAIL" >> ~/.netrc
+          echo "  password $HEROKU_API_KEY" >> ~/.netrc
+          echo "machine git.heroku.com" >> ~/.netrc
+          echo "  login $HEROKU_EMAIL" >> ~/.netrc
+          echo "  password $HEROKU_API_KEY" >> ~/.netrc
           git push heroku main
