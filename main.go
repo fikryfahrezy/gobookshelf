@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"embed"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -22,7 +23,7 @@ import (
 )
 
 // content holds our static web server content.
-//go:embed assets/* templates/*
+//go:embed templates/*
 var content embed.FS
 
 var templates = template.Must(template.ParseFS(content, "templates/*"))
@@ -39,12 +40,20 @@ func main() {
 		log.Fatal(err)
 	}
 
+	httpPort := os.Getenv("PORT")
+	if httpPort == "" {
+		httpPort = "8080"
+	}
+
+	addr := fmt.Sprintf(":%s", httpPort)
+	hostUrl := fmt.Sprintf("http://localhost%s", addr)
+
 	ps := &page.UserSession{Session: map[string]string{}}
-	piu := page.UserHttpClient{Address: "http://localhost:3000"}
-	pig := page.GalleryHttpClient{Address: "http://localhost:3000"}
-	pib := page.BookHttpClient{Address: "http://localhost:3000"}
+	piu := page.UserHttpClient{Address: hostUrl}
+	pig := page.GalleryHttpClient{Address: hostUrl}
+	pib := page.BookHttpClient{Address: hostUrl}
 	pa := &page.Service{
-		Host:           "http://localhost:3000",
+		Host:           hostUrl,
 		Template:       templates,
 		Session:        ps,
 		UserService:    piu,
@@ -78,14 +87,14 @@ func main() {
 	book.AddRoutes(ba)
 
 	// Public path
-	http.Handle("/assets/", http.StripPrefix("/", http.FileServer(http.FS(content))))
+	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 
 	for r := range gosrouter.Routes {
 		http.HandleFunc(r, gosrouter.MakeHandler)
 	}
 
 	s := &http.Server{
-		Addr: "localhost:3000",
+		Addr: addr,
 	}
 
 	log.Fatal(s.ListenAndServe())
